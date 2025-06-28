@@ -1,4 +1,5 @@
 #include "ConcertActions.h"
+#include "ui_mainwindow.h"
 #include <QDialog>
 #include <QFormLayout>
 #include <QDateEdit>
@@ -6,6 +7,9 @@
 #include <QDialogButtonBox>
 #include <QMessageBox>
 #include <QMenu>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QTableWidgetItem>
 
 
 void MainWindow::addConcert()
