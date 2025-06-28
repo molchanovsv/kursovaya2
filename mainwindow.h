@@ -38,6 +38,7 @@ private:
     bool concertDialog(Concerts_entry& out, const Concerts_entry* initial = nullptr);
     bool fioDialog(FIO& out, const FIO* initial = nullptr, const QString& title = "Enter FIO");
     bool validateFIO(const QString& surname, const QString& name, const QString& patronymic) const;
+    bool validateWord(const QString& word) const;
     bool validateInstrument(const QString& instrument) const;
     bool validateTeacher(const QString& surname, const QString& initials) const;
     bool validatePlay(const QString& play) const;

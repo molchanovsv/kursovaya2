@@ -246,18 +246,20 @@ bool MainWindow::studentDialog(Students_entry& out, const Students_entry* initia
     connect(&buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
     if (dialog.exec() == QDialog::Accepted) {
-        if (!validateFIO(surname.text(), name.text(), patronymic.text())) {
-            QMessageBox::warning(this, "Input Error", "Invalid FIO");
+        QStringList errors;
+        if (!validateFIO(surname.text(), name.text(), patronymic.text()))
+            errors << "FIO";
+        if (!validateInstrument(instrument.text()))
+            errors << "instrument";
+        if (!validateTeacher(teacherSurname.text(), teacherInitials.text()))
+            errors << "teacher initials";
+
+        if (!errors.isEmpty()) {
+            QMessageBox::warning(this, "Input Error",
+                                 QString("Invalid: %1").arg(errors.join(", ")));
             return false;
         }
-        if (!validateInstrument(instrument.text())) {
-            QMessageBox::warning(this, "Input Error", "Invalid instrument");
-            return false;
-        }
-        if (!validateTeacher(teacherSurname.text(), teacherInitials.text())) {
-            QMessageBox::warning(this, "Input Error", "Invalid teacher initials");
-            return false;
-        }
+
         out.fio.surname = surname.text().toStdString();
         out.fio.name = name.text().toStdString();
         out.fio.patronymic = patronymic.text().toStdString();
@@ -307,22 +309,22 @@ bool MainWindow::concertDialog(Concerts_entry& out, const Concerts_entry* initia
     connect(&buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
     if (dialog.exec() == QDialog::Accepted) {
-        if (!validateFIO(surname.text(), name.text(), patronymic.text())) {
-            QMessageBox::warning(this, "Input Error", "Invalid FIO");
+        QStringList errors;
+        if (!validateFIO(surname.text(), name.text(), patronymic.text()))
+            errors << "FIO";
+        if (!validatePlay(play.text()))
+            errors << "play";
+        if (!validateHall(hall.text()))
+            errors << "hall";
+        if (!validateDate(date.text()))
+            errors << "date";
+
+        if (!errors.isEmpty()) {
+            QMessageBox::warning(this, "Input Error",
+                                 QString("Invalid: %1").arg(errors.join(", ")));
             return false;
         }
-        if (!validatePlay(play.text())) {
-            QMessageBox::warning(this, "Input Error", "Invalid play");
-            return false;
-        }
-        if (!validateHall(hall.text())) {
-            QMessageBox::warning(this, "Input Error", "Invalid hall");
-            return false;
-        }
-        if (!validateDate(date.text())) {
-            QMessageBox::warning(this, "Input Error", "Invalid date");
-            return false;
-        }
+
         out.fio.surname = surname.text().toStdString();
         out.fio.name = name.text().toStdString();
         out.fio.patronymic = patronymic.text().toStdString();
@@ -372,10 +374,20 @@ bool MainWindow::fioDialog(FIO& out, const FIO* initial, const QString& title)
     connect(&buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
     if (dialog.exec() == QDialog::Accepted) {
-        if (!validateFIO(surname.text(), name.text(), patronymic.text())) {
-            QMessageBox::warning(this, "Input Error", "Invalid FIO");
+        QStringList errors;
+        if (!validateWord(surname.text()))
+            errors << "surname";
+        if (!validateWord(name.text()))
+            errors << "name";
+        if (!validateWord(patronymic.text()))
+            errors << "patronymic";
+
+        if (!errors.isEmpty()) {
+            QMessageBox::warning(this, "Input Error",
+                                 QString("Invalid: %1").arg(errors.join(", ")));
             return false;
         }
+
         out.surname = surname.text().toStdString();
         out.name = name.text().toStdString();
         out.patronymic = patronymic.text().toStdString();
@@ -417,13 +429,20 @@ void MainWindow::studentCellChanged(int row, int column)
         newEntry.teacher.surname == oldEntry.teacher.surname && newEntry.teacher.initials == oldEntry.teacher.initials)
         return;
 
+    QStringList errors;
     if (!validateFIO(QString::fromStdString(newEntry.fio.surname),
                      QString::fromStdString(newEntry.fio.name),
-                     QString::fromStdString(newEntry.fio.patronymic)) ||
-        !validateInstrument(QString::fromStdString(newEntry.instrument)) ||
-        !validateTeacher(QString::fromStdString(newEntry.teacher.surname),
-                         QString::fromStdString(newEntry.teacher.initials))) {
-        QMessageBox::warning(this, "Input Error", "Invalid student data");
+                     QString::fromStdString(newEntry.fio.patronymic)))
+        errors << "FIO";
+    if (!validateInstrument(QString::fromStdString(newEntry.instrument)))
+        errors << "instrument";
+    if (!validateTeacher(QString::fromStdString(newEntry.teacher.surname),
+                         QString::fromStdString(newEntry.teacher.initials)))
+        errors << "teacher initials";
+
+    if (!errors.isEmpty()) {
+        QMessageBox::warning(this, "Input Error",
+                             QString("Invalid: %1").arg(errors.join(", ")));
         refreshTables();
         return;
     }
@@ -460,13 +479,21 @@ void MainWindow::concertCellChanged(int row, int column)
         newEntry.hall == oldEntry.hall && newEntry.date == oldEntry.date)
         return;
 
+    QStringList errors;
     if (!validateFIO(QString::fromStdString(newEntry.fio.surname),
                      QString::fromStdString(newEntry.fio.name),
-                     QString::fromStdString(newEntry.fio.patronymic)) ||
-        !validatePlay(QString::fromStdString(newEntry.play)) ||
-        !validateHall(QString::fromStdString(newEntry.hall)) ||
-        !validateDate(QString::fromStdString(newEntry.date))) {
-        QMessageBox::warning(this, "Input Error", "Invalid concert data");
+                     QString::fromStdString(newEntry.fio.patronymic)))
+        errors << "FIO";
+    if (!validatePlay(QString::fromStdString(newEntry.play)))
+        errors << "play";
+    if (!validateHall(QString::fromStdString(newEntry.hall)))
+        errors << "hall";
+    if (!validateDate(QString::fromStdString(newEntry.date)))
+        errors << "date";
+
+    if (!errors.isEmpty()) {
+        QMessageBox::warning(this, "Input Error",
+                             QString("Invalid: %1").arg(errors.join(", ")));
         refreshTables();
         return;
     }
@@ -477,10 +504,15 @@ void MainWindow::concertCellChanged(int row, int column)
     ui->concertsTable->setCurrentCell(row, column);
 }
 
+bool MainWindow::validateWord(const QString& word) const
+{
+    QRegularExpression pat("^[А-ЯЁ][а-яё]+$");
+    return pat.match(word).hasMatch();
+}
+
 bool MainWindow::validateFIO(const QString& s, const QString& n, const QString& p) const
 {
-    QRegularExpression word("^[А-ЯЁ][а-яё]+$");
-    return word.match(s).hasMatch() && word.match(n).hasMatch() && word.match(p).hasMatch();
+    return validateWord(s) && validateWord(n) && validateWord(p);
 }
 
 bool MainWindow::validateInstrument(const QString& instrument) const
