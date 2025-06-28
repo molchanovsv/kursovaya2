@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
     for(const auto& c : concerts)
         tree->insert(c);
 
-    MainWindow w(table, tree);
+    MainWindow w(table, tree, studEdit.text(), concEdit.text());
     w.show();
     int res = app.exec();
 

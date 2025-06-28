@@ -13,12 +13,17 @@
 #include <QMenu>
 #include <QDate>
 #include <QCheckBox>
+#include <QFileDialog>
+#include <fstream>
 #include <vector>
 #include <array>
 #include "FIO.h"
 
-MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree, QWidget* parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow), students(studentsTable), concerts(concertTree)
+MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree,
+                       const QString& studFile, const QString& concFile,
+                       QWidget* parent)
+    : QMainWindow(parent), ui(new Ui::MainWindow), students(studentsTable), concerts(concertTree),
+      studentFile(studFile), concertFile(concFile)
 {
     ui->setupUi(this);
     connect(ui->addStudentButton, &QPushButton::clicked, this, &MainWindow::addStudent);
@@ -31,6 +36,9 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree, QWidget* 
     connect(ui->searchStudentButton, &QPushButton::clicked, this, &MainWindow::searchStudent);
     connect(ui->clearStudentSearchButton, &QPushButton::clicked, this, &MainWindow::clearStudentSearch);
     connect(ui->clearConcertSearchButton, &QPushButton::clicked, this, &MainWindow::clearConcertSearch);
+    connect(ui->saveStudentsButton, &QPushButton::clicked, this, &MainWindow::exportStudents);
+    connect(ui->saveConcertsButton, &QPushButton::clicked, this, &MainWindow::exportConcerts);
+    connect(ui->saveReportButton, &QPushButton::clicked, this, &MainWindow::exportReport);
     connect(ui->concertsTable, &QTableWidget::itemSelectionChanged, this, &MainWindow::updateConcertTree);
     connect(ui->studentsTable, &QTableWidget::cellChanged, this, &MainWindow::studentCellChanged);
     connect(ui->concertsTable, &QTableWidget::cellChanged, this, &MainWindow::concertCellChanged);
@@ -798,5 +806,94 @@ bool MainWindow::validateDate(const QString& date) const
 {
     QRegularExpression pat("^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[0-2])\\.[0-9]{4}$");
     return pat.match(date).hasMatch();
+}
+
+void MainWindow::exportStudents()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, "Выгрузить студентов",
+                                                   studentFile,
+                                                   "Text files (*.txt)");
+    if (fileName.isEmpty())
+        return;
+    studentFile = fileName;
+    std::ofstream out(fileName.toStdString());
+    if (!out.is_open()) {
+        QMessageBox::warning(this, "Ошибка", "Не удалось открыть файл");
+        return;
+    }
+    for (int i = 0; i < students->getFullSize(); ++i) {
+        if (students->isOccupied(i)) {
+            const auto& st = students->getEntry(i);
+            out << st.fio.surname << ' ' << st.fio.name << ' ' << st.fio.patronymic
+                << ' ' << st.instrument << ' ' << st.teacher.surname << ' '
+                << st.teacher.initials << '\n';
+        }
+    }
+}
+
+void MainWindow::exportConcerts()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, "Выгрузить концерты",
+                                                   concertFile,
+                                                   "Text files (*.txt)");
+    if (fileName.isEmpty())
+        return;
+    concertFile = fileName;
+    std::ofstream out(fileName.toStdString());
+    if (!out.is_open()) {
+        QMessageBox::warning(this, "Ошибка", "Не удалось открыть файл");
+        return;
+    }
+    std::vector<Concerts_entry> vec;
+    concerts->toVector(vec);
+    for (const auto& c : vec) {
+        out << c.fio.surname << ' ' << c.fio.name << ' ' << c.fio.patronymic
+            << " \"" << c.play << "\" " << c.hall << ' ' << c.date << '\n';
+    }
+}
+
+void MainWindow::exportReport()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, "Сохранить отчёт", QString(),
+                                                   "Text files (*.txt)");
+    if (fileName.isEmpty())
+        return;
+    std::ofstream out(fileName.toStdString());
+    if (!out.is_open()) {
+        QMessageBox::warning(this, "Ошибка", "Не удалось открыть файл");
+        return;
+    }
+    QString instFilter = ui->instrumentFilterEdit->text();
+    bool useInst = ui->instrumentFilterCheck->isChecked() && !instFilter.isEmpty();
+    QString hallFilter = ui->hallFilterEdit->text();
+    bool useHall = ui->hallFilterCheck->isChecked() && !hallFilter.isEmpty();
+    QDate selDate = ui->dateEdit->date();
+    bool useDate = ui->dateFilterCheck->isChecked();
+
+    std::vector<Concerts_entry> concertsList;
+    concerts->toVector(concertsList);
+    for (const auto& c : concertsList) {
+        Students_entry st;
+        if (!students->find(c.fio, st))
+            continue;
+
+        QString inst = QString::fromStdString(st.instrument);
+        QString hall = QString::fromStdString(c.hall);
+        QString date = QString::fromStdString(c.date);
+
+        if (useInst && !inst.contains(instFilter, Qt::CaseInsensitive))
+            continue;
+        if (useHall && !hall.contains(hallFilter, Qt::CaseInsensitive))
+            continue;
+        if (useDate) {
+            QDate d = QDate::fromString(date, "dd.MM.yyyy");
+            if (!d.isValid() || d != selDate)
+                continue;
+        }
+
+        out << c.fio.surname << ' ' << c.fio.name << ' ' << c.fio.patronymic << ' '
+            << st.instrument << ' ' << st.teacher.surname << ' ' << st.teacher.initials
+            << " \"" << c.play << "\" " << c.hall << ' ' << c.date << '\n';
+    }
 }
 

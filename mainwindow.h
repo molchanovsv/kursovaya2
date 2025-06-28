@@ -14,7 +14,9 @@ QT_END_NAMESPACE
 class MainWindow : public QMainWindow {
     Q_OBJECT
 public:
-    explicit MainWindow(HashTable* students, AVLTree* concerts, QWidget* parent = nullptr);
+    explicit MainWindow(HashTable* students, AVLTree* concerts,
+                        const QString& studFile, const QString& concFile,
+                        QWidget* parent = nullptr);
     ~MainWindow();
 
 private slots:
@@ -35,6 +37,9 @@ private slots:
     void concertCellChanged(int row, int column);
     void studentContextMenu(const QPoint& pos);
     void concertContextMenu(const QPoint& pos);
+    void exportStudents();
+    void exportConcerts();
+    void exportReport();
 
 private:
     Ui::MainWindow *ui;
@@ -42,6 +47,8 @@ private:
     AVLTree* concerts;
     std::vector<int> studentRowMap;
     std::vector<Concerts_entry> concertList;
+    QString studentFile;
+    QString concertFile;
 
     // search filters
     bool studentFilterActive = false;

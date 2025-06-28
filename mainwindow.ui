@@ -67,17 +67,24 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="clearStudentSearchButton">
-            <property name="text">
-             <string>Очистить поиск</string>
-            </property>
-            <property name="visible">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
+          <widget class="QPushButton" name="clearStudentSearchButton">
+           <property name="text">
+            <string>Очистить поиск</string>
+           </property>
+           <property name="visible">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="saveStudentsButton">
+           <property name="text">
+            <string>Выгрузить изменения</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
        </layout>
       </widget>
           <widget class="QWidget" name="concertsPanel">
@@ -129,17 +136,24 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="clearConcertSearchButton">
-            <property name="text">
-             <string>Очистить поиск</string>
-            </property>
-            <property name="visible">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-             </layout>
-            </item>
+          <widget class="QPushButton" name="clearConcertSearchButton">
+           <property name="text">
+            <string>Очистить поиск</string>
+           </property>
+           <property name="visible">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="saveConcertsButton">
+           <property name="text">
+            <string>Выгрузить изменения</string>
+           </property>
+          </widget>
+         </item>
+         </layout>
+        </item>
            </layout>
           </widget>
          </widget>
@@ -180,20 +194,27 @@
             </property>
            </widget>
           </item>
-          <item>
-           <widget class="QDateEdit" name="dateEdit">
-            <property name="calendarPopup">
-             <bool>true</bool>
-            </property>
-            <property name="displayFormat">
-             <string>dd.MM.yyyy</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="QTableWidget" name="reportTable">
+         <item>
+          <widget class="QDateEdit" name="dateEdit">
+           <property name="calendarPopup">
+            <bool>true</bool>
+           </property>
+           <property name="displayFormat">
+            <string>dd.MM.yyyy</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QPushButton" name="saveReportButton">
+         <property name="text">
+          <string>Выгрузить изменения</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTableWidget" name="reportTable">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
             <horstretch>0</horstretch>
