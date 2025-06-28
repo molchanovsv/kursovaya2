@@ -66,6 +66,16 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QPushButton" name="clearStudentSearchButton">
+            <property name="text">
+             <string>Очистить поиск</string>
+            </property>
+            <property name="visible">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
        </layout>
@@ -115,6 +125,16 @@
            <widget class="QPushButton" name="searchConcertButton">
             <property name="text">
              <string>Поиск</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="clearConcertSearchButton">
+            <property name="text">
+             <string>Очистить поиск</string>
+            </property>
+            <property name="visible">
+             <bool>false</bool>
             </property>
            </widget>
           </item>

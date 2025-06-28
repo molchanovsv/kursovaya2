@@ -28,6 +28,8 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree, QWidget* 
     connect(ui->editConcertButton, &QPushButton::clicked, this, &MainWindow::editConcert);
     connect(ui->searchConcertButton, &QPushButton::clicked, this, &MainWindow::searchConcert);
     connect(ui->searchStudentButton, &QPushButton::clicked, this, &MainWindow::searchStudent);
+    connect(ui->clearStudentSearchButton, &QPushButton::clicked, this, &MainWindow::clearStudentSearch);
+    connect(ui->clearConcertSearchButton, &QPushButton::clicked, this, &MainWindow::clearConcertSearch);
     connect(ui->concertsTable, &QTableWidget::itemSelectionChanged, this, &MainWindow::updateConcertTree);
     connect(ui->studentsTable, &QTableWidget::cellChanged, this, &MainWindow::studentCellChanged);
     connect(ui->concertsTable, &QTableWidget::cellChanged, this, &MainWindow::concertCellChanged);
@@ -58,6 +60,8 @@ MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::refreshTables()
 {
+    ui->clearStudentSearchButton->setVisible(studentFilterActive);
+    ui->clearConcertSearchButton->setVisible(concertFilterActive);
     ui->studentsTable->blockSignals(true);
     ui->studentsTable->clear();
     ui->studentsTable->setColumnCount(5);
@@ -245,11 +249,27 @@ void MainWindow::searchStudent()
     QFormLayout layout(&dialog);
 
     QLineEdit sur, nam, pat, instr, teacher;
+    sur.setText(sSurname);
+    nam.setText(sName);
+    pat.setText(sPatronymic);
+    instr.setText(sInstr);
+    teacher.setText(sTeacher);
+
     layout.addRow("Фамилия", &sur);
     layout.addRow("Имя", &nam);
     layout.addRow("Отчество", &pat);
     layout.addRow("Инструмент", &instr);
     layout.addRow("Учитель", &teacher);
+
+    QPushButton clearBtn("Очистить");
+    layout.addRow(&clearBtn);
+    connect(&clearBtn, &QPushButton::clicked, [&]() {
+        sur.clear();
+        nam.clear();
+        pat.clear();
+        instr.clear();
+        teacher.clear();
+    });
 
     QDialogButtonBox buttons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     layout.addRow(&buttons);
@@ -265,6 +285,7 @@ void MainWindow::searchStudent()
         studentFilterActive = !(sSurname.isEmpty() && sName.isEmpty() &&
                                sPatronymic.isEmpty() && sInstr.isEmpty() &&
                                sTeacher.isEmpty());
+        ui->clearStudentSearchButton->setVisible(studentFilterActive);
         refreshTables();
     }
 }
@@ -279,12 +300,31 @@ void MainWindow::searchConcert()
     QDateEdit date;
     date.setDisplayFormat("dd.MM.yyyy");
     date.setCalendarPopup(true);
+    sur.setText(cSurname);
+    nam.setText(cName);
+    pat.setText(cPatronymic);
+    play.setText(cPlay);
+    hall.setText(cHall);
+    if (!cDate.isEmpty())
+        date.setDate(QDate::fromString(cDate, "dd.MM.yyyy"));
+
     layout.addRow("Фамилия", &sur);
     layout.addRow("Имя", &nam);
     layout.addRow("Отчество", &pat);
     layout.addRow("Пьеса", &play);
     layout.addRow("Зал", &hall);
     layout.addRow("Дата", &date);
+
+    QPushButton clearBtn("Очистить");
+    layout.addRow(&clearBtn);
+    connect(&clearBtn, &QPushButton::clicked, [&]() {
+        sur.clear();
+        nam.clear();
+        pat.clear();
+        play.clear();
+        hall.clear();
+        date.setDate(QDate());
+    });
 
     QDialogButtonBox buttons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     layout.addRow(&buttons);
@@ -297,11 +337,37 @@ void MainWindow::searchConcert()
         cPatronymic = pat.text();
         cPlay = play.text();
         cHall = hall.text();
-        cDate = date.date().isNull() ? QString() : date.date().toString("dd.MM.yyyy");
+        cDate = date.date().isValid() ? date.date().toString("dd.MM.yyyy") : QString();
         concertFilterActive = !(cSurname.isEmpty() && cName.isEmpty() && cPatronymic.isEmpty() &&
                                cPlay.isEmpty() && cHall.isEmpty() && cDate.isEmpty());
+        ui->clearConcertSearchButton->setVisible(concertFilterActive);
         refreshTables();
     }
+}
+
+void MainWindow::clearStudentSearch()
+{
+    sSurname.clear();
+    sName.clear();
+    sPatronymic.clear();
+    sInstr.clear();
+    sTeacher.clear();
+    studentFilterActive = false;
+    ui->clearStudentSearchButton->setVisible(false);
+    refreshTables();
+}
+
+void MainWindow::clearConcertSearch()
+{
+    cSurname.clear();
+    cName.clear();
+    cPatronymic.clear();
+    cPlay.clear();
+    cHall.clear();
+    cDate.clear();
+    concertFilterActive = false;
+    ui->clearConcertSearchButton->setVisible(false);
+    refreshTables();
 }
 
 

@@ -27,6 +27,8 @@ private slots:
     void editConcert();
     void searchStudent();
     void searchConcert();
+    void clearStudentSearch();
+    void clearConcertSearch();
     void updateConcertTree();
     void updateReport();
     void studentCellChanged(int row, int column);
