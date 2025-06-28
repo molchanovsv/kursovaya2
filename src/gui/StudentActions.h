@@ -1,4 +1,4 @@
 #ifndef STUDENTACTIONS_H
 #define STUDENTACTIONS_H
-#include "mainwindow.h"
+#include "MainWindow.h"
 #endif

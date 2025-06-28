@@ -1,8 +1,9 @@
 TARGET = MusicGui
 QT += widgets core5compat
-SOURCES += main.cpp mainwindow.cpp \
-    StudentActions.cpp ConcertActions.cpp Dialogs.cpp Export.cpp \
-    AVLTree.cpp DataLoader.cpp FIO.cpp Students_entry.cpp Teacher.cpp
-HEADERS += mainwindow.h StudentActions.h ConcertActions.h Dialogs.h Export.h \
-    AVLTree.h DataLoader.h FIO.h HashTable.h Students_entry.h Teacher.h Concerts_entry.h
-FORMS += mainwindow.ui
+SOURCES += src/main.cpp src/gui/MainWindow.cpp \
+    src/gui/StudentActions.cpp src/gui/ConcertActions.cpp src/gui/Dialogs.cpp src/gui/Export.cpp \
+    src/core/containers/AVLTree.cpp src/core/DataLoader/DataLoader.cpp src/core/models/FIO.cpp src/core/models/StudentEntry.cpp src/core/models/Teacher.cpp
+HEADERS += src/gui/MainWindow.h src/gui/StudentActions.h src/gui/ConcertActions.h src/gui/Dialogs.h src/gui/Export.h \
+    src/core/containers/AVLTree.h src/core/containers/HashTable.h src/core/DataLoader/DataLoader.h \
+    src/core/models/FIO.h src/core/models/StudentEntry.h src/core/models/Teacher.h src/core/models/ConcertEntry.h
+FORMS += src/gui/mainwindow.ui
