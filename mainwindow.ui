@@ -11,11 +11,11 @@
    </rect>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="mainLayout">
+   <layout class="QVBoxLayout" name="mainLayout">
     <item>
      <widget class="QSplitter" name="mainSplitter">
       <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+       <enum>Qt::Vertical</enum>
       </property>
       <widget class="QWidget" name="studentsPanel">
        <layout class="QVBoxLayout" name="verticalLayout">
