@@ -35,9 +35,6 @@
                  </sizepolicy>
                 </property>
                </widget>
-               <property name="stretch">
-                <number>1</number>
-               </property>
               </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
@@ -90,9 +87,6 @@
                </widget>
                <widget class="QTreeWidget" name="concertTree"/>
               </widget>
-              <property name="stretch">
-               <number>1</number>
-              </property>
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -146,9 +140,6 @@
              </sizepolicy>
             </property>
            </widget>
-           <property name="stretch">
-            <number>1</number>
-           </property>
           </item>
        </layout>
       </widget>
