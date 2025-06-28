@@ -71,6 +71,7 @@ int main(int argc, char *argv[])
 
     int count = 0;
     Students_entry* records = DataLoader::loadStudents(20, count, studentsPath.toStdString());
+    qDebug() << "Loaded" << count << "students";
     qDebug() << "Inserting" << count << "students into hash table";
     auto *table = new HashTable(5);
     for(int i=0;i<count;++i)
@@ -78,6 +79,7 @@ int main(int argc, char *argv[])
 
     auto *tree = new AVLTree();
     auto concerts = DataLoader::loadConcertsData(concertsPath.toStdString());
+    qDebug() << "Loaded" << concerts.size() << "concerts";
     qDebug() << "Inserting" << concerts.size() << "concerts into AVL tree";
     for(const auto& c : concerts)
         tree->insert(c);

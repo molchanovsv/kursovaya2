@@ -27,20 +27,15 @@ namespace DataLoader {
         Students_entry* records = new Students_entry[n];
         count = 0;
 
-        std::string line;
-        while (!input.eof() && count < n) {
+        std::string tmp;
+        while (count < n && (input >> tmp)) {
             Students_entry record;
-            std::string tmp;
-
-            input >> tmp; record.fio.surname = decodeCp1251(tmp);
-            input >> tmp; record.fio.name = decodeCp1251(tmp);
-            input >> tmp; record.fio.patronymic = decodeCp1251(tmp);
-            if (input.eof()) break;
-
-            input >> tmp; record.instrument = decodeCp1251(tmp);
-
-            input >> tmp; record.teacher.surname = decodeCp1251(tmp);
-            input >> tmp; record.teacher.initials = decodeCp1251(tmp);
+            record.fio.surname = decodeCp1251(tmp);
+            if (!(input >> tmp)) break; record.fio.name = decodeCp1251(tmp);
+            if (!(input >> tmp)) break; record.fio.patronymic = decodeCp1251(tmp);
+            if (!(input >> tmp)) break; record.instrument = decodeCp1251(tmp);
+            if (!(input >> tmp)) break; record.teacher.surname = decodeCp1251(tmp);
+            if (!(input >> tmp)) break; record.teacher.initials = decodeCp1251(tmp);
 
             records[count++] = record;
         }
@@ -62,28 +57,25 @@ namespace DataLoader {
         Concerts_entry entry;
         std::string line;
 
-        while (file >> line) {
+        while (true) {
+            if (!(file >> line)) break;
             entry.fio.surname = decodeCp1251(line);
-            if (!(file >> line))
-                break;
+            if (!(file >> line)) break;
             entry.fio.name = decodeCp1251(line);
-            if (!(file >> line))
-                break;
+            if (!(file >> line)) break;
             entry.fio.patronymic = decodeCp1251(line);
-            // Чтение пьесы (в кавычках)
-            file >> std::ws; // Пропустить пробелы
-            std::getline(file, line, '"'); // Пропустить всё до первой кавычки
-            std::getline(file, line, '"'); // Прочитать пьесу до закрывающей кавычки
+
+            file >> std::ws;
+            if (!std::getline(file, line, '"')) break; // skip to quote
+            if (!std::getline(file, line, '"')) break; // read quoted text
             entry.play = decodeCp1251(line);
 
-            // Чтение зала (2 слова)
             file >> std::ws;
             std::string hallPart1, hallPart2;
-            file >> hallPart1 >> hallPart2;
+            if (!(file >> hallPart1 >> hallPart2)) break;
             entry.hall = decodeCp1251(hallPart1) + " " + decodeCp1251(hallPart2);
 
-            // Чтение даты
-            file >> line;
+            if (!(file >> line)) break;
             entry.date = decodeCp1251(line);
 
             entries.push_back(entry);
