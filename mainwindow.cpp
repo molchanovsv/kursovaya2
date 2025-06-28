@@ -302,6 +302,10 @@ void MainWindow::searchStudent()
             ui->hashStepsLabel->setText(found
                 ? QString("Хэш поиск: %1 шагов").arg(steps)
                 : QString("Хэш поиск: не найдено (%1 шагов)").arg(steps));
+            QMessageBox::information(this, "Результат поиска",
+                                     found
+                                         ? QString("Найдено за %1 шагов").arg(steps)
+                                         : QString("Не найдено. Количество шагов: %1").arg(steps));
         } else {
             ui->hashStepsLabel->clear();
         }
@@ -374,6 +378,10 @@ void MainWindow::searchConcert()
             ui->treeStepsLabel->setText(found
                 ? QString("Дерево поиск: %1 шагов").arg(steps)
                 : QString("Дерево поиск: не найдено (%1 шагов)").arg(steps));
+            QMessageBox::information(this, "Результат поиска",
+                                     found
+                                         ? QString("Найдено за %1 шагов").arg(steps)
+                                         : QString("Не найдено. Количество шагов: %1").arg(steps));
         } else {
             ui->treeStepsLabel->clear();
         }

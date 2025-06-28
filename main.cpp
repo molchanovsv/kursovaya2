@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
     QDialog fileDialog;
     fileDialog.setWindowTitle("Выбор файлов");
     QFormLayout layout(&fileDialog);
+    layout.setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
     QLineEdit studEdit, concEdit;
     QSpinBox hashSizeSpin;
     hashSizeSpin.setMinimum(1);
