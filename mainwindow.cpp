@@ -7,6 +7,10 @@
 #include <QLineEdit>
 #include <QLabel>
 #include <QDialogButtonBox>
+#include <QTreeWidget>
+#include <QBrush>
+#include <vector>
+#include "FIO.h"
 
 MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree, QWidget* parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), students(studentsTable), concerts(concertTree)
@@ -20,7 +24,9 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree, QWidget* 
     connect(ui->editConcertButton, &QPushButton::clicked, this, &MainWindow::editConcert);
     connect(ui->searchStudentButton, &QPushButton::clicked, this, &MainWindow::searchStudent);
     connect(ui->searchConcertButton, &QPushButton::clicked, this, &MainWindow::searchConcert);
+    connect(ui->concertsTable, &QTableWidget::itemSelectionChanged, this, &MainWindow::updateConcertTree);
     refreshTables();
+    updateConcertTree();
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -40,15 +46,20 @@ void MainWindow::refreshTables()
     std::vector<Concerts_entry> list;
     concerts->toVector(list);
     ui->concertsTable->clear();
-    ui->concertsTable->setColumnCount(1);
+    ui->concertsTable->setColumnCount(4);
+    QStringList headers;
+    headers << "FIO" << "Play" << "Hall" << "Date";
+    ui->concertsTable->setHorizontalHeaderLabels(headers);
     ui->concertsTable->setRowCount(static_cast<int>(list.size()));
     for (int i = 0; i < list.size(); ++i) {
         const auto& e = list[i];
-        QString text = QString::fromStdString(e.fio.surname + " " + e.fio.name + " " +
-                                               e.fio.patronymic + " - " + e.play +
-                                               " - " + e.hall + " - " + e.date);
-        ui->concertsTable->setItem(i, 0, new QTableWidgetItem(text));
+        QString fio = QString::fromStdString(e.fio.surname + " " + e.fio.name + " " + e.fio.patronymic);
+        ui->concertsTable->setItem(i, 0, new QTableWidgetItem(fio));
+        ui->concertsTable->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(e.play)));
+        ui->concertsTable->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(e.hall)));
+        ui->concertsTable->setItem(i, 3, new QTableWidgetItem(QString::fromStdString(e.date)));
     }
+    updateConcertTree();
 }
 
 void MainWindow::addStudent()
@@ -275,5 +286,20 @@ bool MainWindow::concertDialog(Concerts_entry& out, const Concerts_entry* initia
         return true;
     }
     return false;
+}
+
+void MainWindow::updateConcertTree()
+{
+    int row = ui->concertsTable->currentRow();
+    std::vector<Concerts_entry> list;
+    concerts->toVector(list);
+    FIO* highlight = nullptr;
+    FIO temp;
+    if (row >= 0 && row < list.size()) {
+        temp = list[row].fio;
+        highlight = &temp;
+    }
+
+    concerts->buildTreeWidget(ui->concertTree, highlight);
 }
 

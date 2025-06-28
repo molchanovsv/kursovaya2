@@ -25,6 +25,7 @@ private slots:
     void editConcert();
     void searchStudent();
     void searchConcert();
+    void updateConcertTree();
 
 private:
     Ui::MainWindow *ui;
