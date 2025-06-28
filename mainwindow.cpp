@@ -518,10 +518,10 @@ bool MainWindow::concertDialog(Concerts_entry& out, const Concerts_entry* initia
 void MainWindow::updateConcertTree()
 {
     int row = ui->concertsTable->currentRow();
-    FIO* highlight = nullptr;
-    FIO temp;
+    Concerts_entry* highlight = nullptr;
+    Concerts_entry temp;
     if (row >= 0 && row < static_cast<int>(concertList.size())) {
-        temp = concertList[row].fio;
+        temp = concertList[row];
         highlight = &temp;
     }
 
@@ -741,8 +741,8 @@ void MainWindow::studentContextMenu(const QPoint& pos)
         return;
     ui->studentsTable->setCurrentCell(row, 0);
     QMenu menu(this);
-    QAction* edit = menu.addAction("Edit");
-    QAction* remove = menu.addAction("Remove");
+    QAction* edit = menu.addAction("Изменить");
+    QAction* remove = menu.addAction("Удалить");
     QAction* chosen = menu.exec(ui->studentsTable->viewport()->mapToGlobal(pos));
     if (chosen == edit) {
         editStudent();
@@ -760,8 +760,8 @@ void MainWindow::concertContextMenu(const QPoint& pos)
         return;
     ui->concertsTable->setCurrentCell(row, 0);
     QMenu menu(this);
-    QAction* edit = menu.addAction("Edit");
-    QAction* remove = menu.addAction("Remove");
+    QAction* edit = menu.addAction("Изменить");
+    QAction* remove = menu.addAction("Удалить");
     QAction* chosen = menu.exec(ui->concertsTable->viewport()->mapToGlobal(pos));
     if (chosen == edit) {
         editConcert();
