@@ -180,3 +180,62 @@ std::vector<Concerts_entry> AVLTree::searchByDate(const std::string& date) const
     return res;
 }
 
+void AVLTree::fillTreeWidget(Node* node, QTreeWidgetItem* parent, QTreeWidget* tree,
+                             const Concerts_entry* highlight,
+                             const QString& prefix) const {
+    if (!node) return;
+    QString base = QString::fromStdString(node->data.fio.surname + " " + node->data.fio.name + " " +
+                                          node->data.fio.patronymic + " - " + node->data.play +
+                                          " - " + node->data.hall + " - " + node->data.date);
+    QString text = prefix.isEmpty() ? base : prefix + base;
+    QTreeWidgetItem* item;
+    if (parent)
+        item = new QTreeWidgetItem(parent);
+    else {
+        item = new QTreeWidgetItem(tree);
+        tree->addTopLevelItem(item);
+    }
+    item->setText(0, text);
+
+    if (highlight &&
+        highlight->fio.surname == node->data.fio.surname &&
+        highlight->fio.name == node->data.fio.name &&
+        highlight->fio.patronymic == node->data.fio.patronymic &&
+        highlight->play == node->data.play &&
+        highlight->hall == node->data.hall &&
+        highlight->date == node->data.date) {
+        item->setBackground(0, QBrush(Qt::magenta));
+    }
+
+    fillTreeWidget(node->left, item, tree, highlight, "L: ");
+    fillTreeWidget(node->right, item, tree, highlight, "R: ");
+}
+
+void AVLTree::buildTreeWidget(QTreeWidget* widget,
+                              const Concerts_entry* highlight) const {
+    if (!widget)
+        return;
+    widget->clear();
+    fillTreeWidget(root, nullptr, widget, highlight, "");
+    widget->expandAll();
+}
+
+bool AVLTree::find(const FIO& fio, Concerts_entry& res, int& steps) const {
+    Node* node = root;
+    std::string target = fio.surname + fio.name + fio.patronymic;
+    steps = 0;
+    while (node) {
+        ++steps;
+        std::string cur = node->data.fio.surname + node->data.fio.name + node->data.fio.patronymic;
+        if (target == cur) {
+            res = node->data;
+            return true;
+        }
+        if (target < cur)
+            node = node->left;
+        else
+            node = node->right;
+    }
+    return false;
+}
+

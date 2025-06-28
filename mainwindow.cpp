@@ -1,10 +1,29 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QInputDialog>
+#include <QDateEdit>
 #include <QMessageBox>
+#include <QDialog>
+#include <QFormLayout>
+#include <QLineEdit>
+#include <QLabel>
+#include <QDialogButtonBox>
+#include <QTreeWidget>
+#include <QBrush>
+#include <QRegularExpression>
+#include <QMenu>
+#include <QDate>
+#include <QCheckBox>
+#include <QFileDialog>
+#include <fstream>
+#include <vector>
+#include <array>
+#include "FIO.h"
 
-MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree, QWidget* parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow), students(studentsTable), concerts(concertTree)
+MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree,
+                       const QString& studFile, const QString& concFile,
+                       QWidget* parent)
+    : QMainWindow(parent), ui(new Ui::MainWindow), students(studentsTable), concerts(concertTree),
+      studentFile(studFile), concertFile(concFile)
 {
     ui->setupUi(this);
     connect(ui->addStudentButton, &QPushButton::clicked, this, &MainWindow::addStudent);
@@ -13,166 +32,892 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree, QWidget* 
     connect(ui->addConcertButton, &QPushButton::clicked, this, &MainWindow::addConcert);
     connect(ui->removeConcertButton, &QPushButton::clicked, this, &MainWindow::removeConcert);
     connect(ui->editConcertButton, &QPushButton::clicked, this, &MainWindow::editConcert);
-    connect(ui->searchStudentButton, &QPushButton::clicked, this, &MainWindow::searchStudent);
     connect(ui->searchConcertButton, &QPushButton::clicked, this, &MainWindow::searchConcert);
+    connect(ui->searchStudentButton, &QPushButton::clicked, this, &MainWindow::searchStudent);
+    connect(ui->clearStudentSearchButton, &QPushButton::clicked, this, &MainWindow::clearStudentSearch);
+    connect(ui->clearConcertSearchButton, &QPushButton::clicked, this, &MainWindow::clearConcertSearch);
+    connect(ui->saveStudentsButton, &QPushButton::clicked, this, &MainWindow::exportStudents);
+    connect(ui->saveConcertsButton, &QPushButton::clicked, this, &MainWindow::exportConcerts);
+    connect(ui->saveReportButton, &QPushButton::clicked, this, &MainWindow::exportReport);
+    connect(ui->concertsTable, &QTableWidget::itemSelectionChanged, this, &MainWindow::updateConcertTree);
+    connect(ui->studentsTable, &QTableWidget::cellChanged, this, &MainWindow::studentCellChanged);
+    connect(ui->concertsTable, &QTableWidget::cellChanged, this, &MainWindow::concertCellChanged);
+    ui->studentsTable->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->concertsTable->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->studentsTable, &QTableWidget::customContextMenuRequested, this, &MainWindow::studentContextMenu);
+    connect(ui->concertsTable, &QTableWidget::customContextMenuRequested, this, &MainWindow::concertContextMenu);
+    connect(ui->instrumentFilterEdit, &QLineEdit::textChanged, this, &MainWindow::updateReport);
+    connect(ui->hallFilterEdit, &QLineEdit::textChanged, this, &MainWindow::updateReport);
+    connect(ui->dateEdit, &QDateEdit::dateChanged, this, &MainWindow::updateReport);
+    connect(ui->instrumentFilterCheck, &QCheckBox::toggled, this, &MainWindow::updateReport);
+    connect(ui->hallFilterCheck, &QCheckBox::toggled, this, &MainWindow::updateReport);
+    connect(ui->dateFilterCheck, &QCheckBox::toggled, this, &MainWindow::updateReport);
+    ui->concertTree->setHeaderHidden(true);
+    ui->reportTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->studentsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->concertsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->reportTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->mainSplitter->setStretchFactor(0, 1);
+    ui->mainSplitter->setStretchFactor(1, 1);
+    ui->concertsSplitter->setStretchFactor(0, 1);
+    ui->concertsSplitter->setStretchFactor(1, 1);
     refreshTables();
+    updateConcertTree();
 }
 
 MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::refreshTables()
 {
-    ui->studentsTable->clear();
-    ui->studentsTable->setColumnCount(1);
-    ui->studentsTable->setRowCount(students->getFullSize());
+    ui->clearStudentSearchButton->setVisible(studentFilterActive);
+    ui->clearConcertSearchButton->setVisible(concertFilterActive);
+    ui->studentsTable->blockSignals(true);
+    ui->studentsTable->clearContents();
+    ui->studentsTable->setRowCount(0);
+    ui->studentsTable->setColumnCount(5);
+    QStringList studentHeaders;
+    studentHeaders << "Фамилия" << "Имя" << "Отчество" << "Инструмент" << "Учитель";
+    ui->studentsTable->setHorizontalHeaderLabels(studentHeaders);
+    bool useSearch = studentFilterActive;
+    studentRowMap.clear();
+    int row = 0;
     for (int i = 0; i < students->getFullSize(); ++i) {
         if (students->isOccupied(i)) {
-            QString text = QString::fromStdString(students->entryToString(i));
-            ui->studentsTable->setItem(i, 0, new QTableWidgetItem(text));
+            const auto& st = students->getEntry(i);
+            QString sur = QString::fromStdString(st.fio.surname);
+            QString nam = QString::fromStdString(st.fio.name);
+            QString pat = QString::fromStdString(st.fio.patronymic);
+            QString instr = QString::fromStdString(st.instrument);
+            QString teacher =
+                QString::fromStdString(st.teacher.surname + " " + st.teacher.initials);
+            if (useSearch) {
+                if (!sSurname.isEmpty() && !sur.contains(sSurname, Qt::CaseInsensitive))
+                    continue;
+                if (!sName.isEmpty() && !nam.contains(sName, Qt::CaseInsensitive))
+                    continue;
+                if (!sPatronymic.isEmpty() && !pat.contains(sPatronymic, Qt::CaseInsensitive))
+                    continue;
+                if (!sInstr.isEmpty() && !instr.contains(sInstr, Qt::CaseInsensitive))
+                    continue;
+                if (!sTeacher.isEmpty() && !teacher.contains(sTeacher, Qt::CaseInsensitive))
+                    continue;
+            }
+            ui->studentsTable->insertRow(row);
+            QTableWidgetItem* vh = new QTableWidgetItem(QString::number(i));
+            vh->setTextAlignment(Qt::AlignCenter);
+            ui->studentsTable->setVerticalHeaderItem(row, vh);
+
+            auto makeItem = [](const QString& t) {
+                QTableWidgetItem* it = new QTableWidgetItem(t);
+                it->setTextAlignment(Qt::AlignCenter);
+                return it;
+            };
+
+            ui->studentsTable->setItem(row, 0, makeItem(QString::fromStdString(st.fio.surname)));
+            ui->studentsTable->setItem(row, 1, makeItem(QString::fromStdString(st.fio.name)));
+            ui->studentsTable->setItem(row, 2, makeItem(QString::fromStdString(st.fio.patronymic)));
+            ui->studentsTable->setItem(row, 3, makeItem(QString::fromStdString(st.instrument)));
+            ui->studentsTable->setItem(row, 4, makeItem(QString::fromStdString(st.teacher.surname + " " + st.teacher.initials)));
+            studentRowMap.push_back(i);
+            ++row;
         }
     }
+    ui->studentsTable->setRowCount(row);
+    ui->studentsTable->blockSignals(false);
 
     std::vector<Concerts_entry> list;
     concerts->toVector(list);
-    ui->concertsTable->clear();
-    ui->concertsTable->setColumnCount(1);
-    ui->concertsTable->setRowCount(static_cast<int>(list.size()));
-    for (int i = 0; i < list.size(); ++i) {
-        const auto& e = list[i];
-        QString text = QString::fromStdString(e.fio.surname + " " + e.fio.name + " " +
-                                               e.fio.patronymic + " - " + e.play +
-                                               " - " + e.hall + " - " + e.date);
-        ui->concertsTable->setItem(i, 0, new QTableWidgetItem(text));
+    bool useSearchC = concertFilterActive;
+    concertList.clear();
+    for (const auto& e : list) {
+        QString sur = QString::fromStdString(e.fio.surname);
+        QString nam = QString::fromStdString(e.fio.name);
+        QString pat = QString::fromStdString(e.fio.patronymic);
+        QString play = QString::fromStdString(e.play);
+        QString hall = QString::fromStdString(e.hall);
+        QString date = QString::fromStdString(e.date);
+        if (useSearchC) {
+            if (!cSurname.isEmpty() && !sur.contains(cSurname, Qt::CaseInsensitive))
+                continue;
+            if (!cName.isEmpty() && !nam.contains(cName, Qt::CaseInsensitive))
+                continue;
+            if (!cPatronymic.isEmpty() && !pat.contains(cPatronymic, Qt::CaseInsensitive))
+                continue;
+            if (!cPlay.isEmpty() && !play.contains(cPlay, Qt::CaseInsensitive))
+                continue;
+            if (!cHall.isEmpty() && !hall.contains(cHall, Qt::CaseInsensitive))
+                continue;
+            if (cDateEnabled && !cDate.isEmpty() && date != cDate)
+                continue;
+        }
+        concertList.push_back(e);
     }
+    ui->concertsTable->blockSignals(true);
+    ui->concertsTable->clearContents();
+    ui->concertsTable->setRowCount(0);
+    ui->concertsTable->setColumnCount(6);
+    QStringList headers;
+    headers << "Фамилия" << "Имя" << "Отчество" << "Пьеса" << "Зал" << "Дата";
+    ui->concertsTable->setHorizontalHeaderLabels(headers);
+    int count = static_cast<int>(concertList.size());
+    for (int i = 0; i < count; ++i) {
+        ui->concertsTable->insertRow(i);
+        const auto& e = concertList[i];
+        auto makeItem = [](const QString& t) {
+            QTableWidgetItem* it = new QTableWidgetItem(t);
+            it->setTextAlignment(Qt::AlignCenter);
+            return it;
+        };
+
+        ui->concertsTable->setItem(i, 0, makeItem(QString::fromStdString(e.fio.surname)));
+        ui->concertsTable->setItem(i, 1, makeItem(QString::fromStdString(e.fio.name)));
+        ui->concertsTable->setItem(i, 2, makeItem(QString::fromStdString(e.fio.patronymic)));
+        ui->concertsTable->setItem(i, 3, makeItem(QString::fromStdString(e.play)));
+        ui->concertsTable->setItem(i, 4, makeItem(QString::fromStdString(e.hall)));
+        ui->concertsTable->setItem(i, 5, makeItem(QString::fromStdString(e.date)));
+    }
+    ui->concertsTable->blockSignals(false);
+    updateConcertTree();
+    updateReport();
 }
 
 void MainWindow::addStudent()
 {
     Students_entry se;
-    se.fio.surname = QInputDialog::getText(this, "Surname", "Surname").toStdString();
-    se.fio.name = QInputDialog::getText(this, "Name", "Name").toStdString();
-    se.fio.patronymic = QInputDialog::getText(this, "Patronymic", "Patronymic").toStdString();
-    se.instrument = QInputDialog::getText(this, "Instrument", "Instrument").toStdString();
-    se.teacher.surname = QInputDialog::getText(this, "Teacher surname", "Teacher surname").toStdString();
-    se.teacher.initials = QInputDialog::getText(this, "Teacher initials", "Teacher initials").toStdString();
-    students->insert(se);
-    refreshTables();
+    if (studentDialog(se)) {
+        students->insert(se);
+        refreshTables();
+    }
 }
 
 void MainWindow::removeStudent()
 {
     FIO f;
-    f.surname = QInputDialog::getText(this, "Surname", "Surname").toStdString();
-    f.name = QInputDialog::getText(this, "Name", "Name").toStdString();
-    f.patronymic = QInputDialog::getText(this, "Patronymic", "Patronymic").toStdString();
+    if (!fioDialog(f, nullptr, "Удалить ученика"))
+        return;
     students->remove(f);
     refreshTables();
 }
 
 void MainWindow::editStudent()
 {
-    FIO f;
-    f.surname = QInputDialog::getText(this, "Surname", "Surname").toStdString();
-    f.name = QInputDialog::getText(this, "Name", "Name").toStdString();
-    f.patronymic = QInputDialog::getText(this, "Patronymic", "Patronymic").toStdString();
-    students->remove(f);
-    Students_entry se;
-    se.fio = f;
-    se.instrument = QInputDialog::getText(this, "Instrument", "Instrument").toStdString();
-    se.teacher.surname = QInputDialog::getText(this, "Teacher surname", "Teacher surname").toStdString();
-    se.teacher.initials = QInputDialog::getText(this, "Teacher initials", "Teacher initials").toStdString();
-    students->insert(se);
+    int row = ui->studentsTable->currentRow();
+    if (row < 0 || row >= static_cast<int>(studentRowMap.size())) {
+        QMessageBox::warning(this, "Редактировать ученика", "Выберите запись в таблице.");
+        return;
+    }
+
+    int index = studentRowMap[row];
+    Students_entry oldEntry = students->getEntry(index);
+    Students_entry newEntry = oldEntry;
+    if (!studentDialog(newEntry, &oldEntry))
+        return;
+
+    students->remove(oldEntry.fio);
+    students->insert(newEntry);
     refreshTables();
 }
 
 void MainWindow::addConcert()
 {
     Concerts_entry e;
-    e.fio.surname = QInputDialog::getText(this, "Surname", "Surname").toStdString();
-    e.fio.name = QInputDialog::getText(this, "Name", "Name").toStdString();
-    e.fio.patronymic = QInputDialog::getText(this, "Patronymic", "Patronymic").toStdString();
-    e.play = QInputDialog::getText(this, "Play", "Play").toStdString();
-    e.hall = QInputDialog::getText(this, "Hall", "Hall").toStdString();
-    e.date = QInputDialog::getText(this, "Date", "Date").toStdString();
-    concerts->insert(e);
-    refreshTables();
+    if (concertDialog(e)) {
+        concerts->insert(e);
+        refreshTables();
+    }
 }
 
 void MainWindow::removeConcert()
 {
     FIO f;
-    f.surname = QInputDialog::getText(this, "Surname", "Surname").toStdString();
-    f.name = QInputDialog::getText(this, "Name", "Name").toStdString();
-    f.patronymic = QInputDialog::getText(this, "Patronymic", "Patronymic").toStdString();
+    if (!fioDialog(f, nullptr, "Удалить концерт"))
+        return;
     concerts->remove(f);
     refreshTables();
 }
 
 void MainWindow::editConcert()
 {
-    FIO f;
-    f.surname = QInputDialog::getText(this, "Surname", "Surname").toStdString();
-    f.name = QInputDialog::getText(this, "Name", "Name").toStdString();
-    f.patronymic = QInputDialog::getText(this, "Patronymic", "Patronymic").toStdString();
-    concerts->remove(f);
-    Concerts_entry e;
-    e.fio = f;
-    e.play = QInputDialog::getText(this, "Play", "Play").toStdString();
-    e.hall = QInputDialog::getText(this, "Hall", "Hall").toStdString();
-    e.date = QInputDialog::getText(this, "Date", "Date").toStdString();
-    concerts->insert(e);
+    int row = ui->concertsTable->currentRow();
+    if (row < 0 || row >= static_cast<int>(concertList.size())) {
+        QMessageBox::warning(this, "Редактировать концерт", "Выберите запись в таблице.");
+        return;
+    }
+
+    Concerts_entry oldEntry = concertList[row];
+    Concerts_entry newEntry = oldEntry;
+    if (!concertDialog(newEntry, &oldEntry))
+        return;
+
+    concerts->remove(oldEntry.fio);
+    concerts->insert(newEntry);
     refreshTables();
 }
 
 void MainWindow::searchStudent()
 {
-    QStringList types;
-    types << "Name" << "Instrument";
-    bool ok = false;
-    QString type = QInputDialog::getItem(this, "Search Student", "Search by:", types, 0, false, &ok);
-    if (!ok || type.isEmpty())
-        return;
-    QString query = QInputDialog::getText(this, "Search Student", "Value:", QLineEdit::Normal, QString(), &ok);
-    if (!ok)
-        return;
-    std::vector<Students_entry> results;
-    if (type == "Name")
-        results = students->searchByName(query.toStdString());
-    else
-        results = students->searchByInstrument(query.toStdString());
+    QDialog dialog(this);
+    dialog.setWindowTitle("Фильтр учеников");
+    QFormLayout layout(&dialog);
 
-    QString text;
-    for (const auto& st : results)
-        text += QString::fromStdString(st.fio.surname + " " + st.fio.name + " " + st.fio.patronymic +
-                                       " - " + st.instrument + " (" + st.teacher.surname + " " + st.teacher.initials + ")\n");
-    if (text.isEmpty())
-        text = "Not found";
-    QMessageBox::information(this, "Results", text);
+    QLineEdit sur, nam, pat, instr, teacher;
+    sur.setText(sSurname);
+    nam.setText(sName);
+    pat.setText(sPatronymic);
+    instr.setText(sInstr);
+    teacher.setText(sTeacher);
+
+    layout.addRow("Фамилия", &sur);
+    layout.addRow("Имя", &nam);
+    layout.addRow("Отчество", &pat);
+    layout.addRow("Инструмент", &instr);
+    layout.addRow("Учитель", &teacher);
+
+    QPushButton clearBtn("Очистить");
+    layout.addRow(&clearBtn);
+    connect(&clearBtn, &QPushButton::clicked, [&]() {
+        sur.clear();
+        nam.clear();
+        pat.clear();
+        instr.clear();
+        teacher.clear();
+    });
+
+    QDialogButtonBox buttons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    layout.addRow(&buttons);
+    connect(&buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(&buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        sSurname = sur.text();
+        sName = nam.text();
+        sPatronymic = pat.text();
+        sInstr = instr.text();
+        sTeacher = teacher.text();
+        if (!sSurname.isEmpty() && !sName.isEmpty() && !sPatronymic.isEmpty()) {
+            FIO f{ sSurname.toStdString(), sName.toStdString(), sPatronymic.toStdString() };
+            Students_entry tmp;
+            int steps = 0;
+            bool found = students->find(f, tmp, steps);
+            ui->hashStepsLabel->setText(found
+                ? QString("Хэш поиск: %1 шагов").arg(steps)
+                : QString("Хэш поиск: не найдено (%1 шагов)").arg(steps));
+        } else {
+            ui->hashStepsLabel->clear();
+        }
+        studentFilterActive = !(sSurname.isEmpty() && sName.isEmpty() &&
+                               sPatronymic.isEmpty() && sInstr.isEmpty() &&
+                               sTeacher.isEmpty());
+        ui->clearStudentSearchButton->setVisible(studentFilterActive);
+        refreshTables();
+    }
 }
 
 void MainWindow::searchConcert()
 {
-    QStringList types;
-    types << "Date" << "Hall";
-    bool ok = false;
-    QString type = QInputDialog::getItem(this, "Search Concert", "Search by:", types, 0, false, &ok);
-    if (!ok || type.isEmpty())
-        return;
-    QString query = QInputDialog::getText(this, "Search Concert", "Value:", QLineEdit::Normal, QString(), &ok);
-    if (!ok)
-        return;
-    std::vector<Concerts_entry> results;
-    if (type == "Date")
-        results = concerts->searchByDate(query.toStdString());
-    else
-        results = concerts->searchByHall(query.toStdString());
+    QDialog dialog(this);
+    dialog.setWindowTitle("Фильтр концертов");
+    QFormLayout layout(&dialog);
 
-    QString text;
-    for (const auto& e : results)
-        text += QString::fromStdString(e.fio.surname + " " + e.fio.name + " " + e.fio.patronymic +
-                                       " - " + e.play + " - " + e.hall + " - " + e.date + "\n");
-    if (text.isEmpty())
-        text = "Not found";
-    QMessageBox::information(this, "Results", text);
+    QLineEdit sur, nam, pat, play, hall;
+    QDateEdit date;
+    QCheckBox dateCheck("Искать по дате?");
+    date.setDisplayFormat("dd.MM.yyyy");
+    date.setCalendarPopup(true);
+    sur.setText(cSurname);
+    nam.setText(cName);
+    pat.setText(cPatronymic);
+    play.setText(cPlay);
+    hall.setText(cHall);
+    if (!cDate.isEmpty())
+        date.setDate(QDate::fromString(cDate, "dd.MM.yyyy"));
+    dateCheck.setChecked(cDateEnabled);
+
+    layout.addRow("Фамилия", &sur);
+    layout.addRow("Имя", &nam);
+    layout.addRow("Отчество", &pat);
+    layout.addRow("Пьеса", &play);
+    layout.addRow("Зал", &hall);
+    layout.addRow(&dateCheck);
+    layout.addRow("Дата", &date);
+
+    QPushButton clearBtn("Очистить");
+    layout.addRow(&clearBtn);
+    connect(&clearBtn, &QPushButton::clicked, [&]() {
+        sur.clear();
+        nam.clear();
+        pat.clear();
+        play.clear();
+        hall.clear();
+        date.setDate(QDate());
+        dateCheck.setChecked(false);
+    });
+
+    QDialogButtonBox buttons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    layout.addRow(&buttons);
+    connect(&buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(&buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        cSurname = sur.text();
+        cName = nam.text();
+        cPatronymic = pat.text();
+        cPlay = play.text();
+        cHall = hall.text();
+        cDate = date.date().isValid() ? date.date().toString("dd.MM.yyyy") : QString();
+        cDateEnabled = dateCheck.isChecked();
+        if (!cSurname.isEmpty() && !cName.isEmpty() && !cPatronymic.isEmpty()) {
+            FIO f{ cSurname.toStdString(), cName.toStdString(), cPatronymic.toStdString() };
+            Concerts_entry tmp;
+            int steps = 0;
+            bool found = concerts->find(f, tmp, steps);
+            ui->treeStepsLabel->setText(found
+                ? QString("Дерево поиск: %1 шагов").arg(steps)
+                : QString("Дерево поиск: не найдено (%1 шагов)").arg(steps));
+        } else {
+            ui->treeStepsLabel->clear();
+        }
+        concertFilterActive = !(cSurname.isEmpty() && cName.isEmpty() && cPatronymic.isEmpty() &&
+                               cPlay.isEmpty() && cHall.isEmpty() && !(cDateEnabled && !cDate.isEmpty()));
+        ui->clearConcertSearchButton->setVisible(concertFilterActive);
+        refreshTables();
+    }
+}
+
+void MainWindow::clearStudentSearch()
+{
+    sSurname.clear();
+    sName.clear();
+    sPatronymic.clear();
+    sInstr.clear();
+    sTeacher.clear();
+    studentFilterActive = false;
+    ui->clearStudentSearchButton->setVisible(false);
+    ui->hashStepsLabel->clear();
+    refreshTables();
+}
+
+void MainWindow::clearConcertSearch()
+{
+    cSurname.clear();
+    cName.clear();
+    cPatronymic.clear();
+    cPlay.clear();
+    cHall.clear();
+    cDate.clear();
+    cDateEnabled = false;
+    concertFilterActive = false;
+    ui->clearConcertSearchButton->setVisible(false);
+    ui->treeStepsLabel->clear();
+    refreshTables();
+}
+
+
+bool MainWindow::studentDialog(Students_entry& out, const Students_entry* initial)
+{
+    QDialog dialog(this);
+    dialog.setWindowTitle(initial ? "Редактировать ученика" : "Добавить ученика");
+    QFormLayout layout(&dialog);
+
+    QLabel currentLabel;
+    if (initial) {
+        QString cur = QString::fromStdString(initial->fio.surname + " " + initial->fio.name + " " +
+                                            initial->fio.patronymic + " - " + initial->instrument +
+                                            " (" + initial->teacher.surname + " " + initial->teacher.initials + ")");
+        currentLabel.setText(cur);
+        layout.addRow(&currentLabel);
+    }
+
+    QLineEdit surname, name, patronymic, instrument, teacherSurname, teacherInitials;
+    if (initial) {
+        surname.setText(QString::fromStdString(initial->fio.surname));
+        name.setText(QString::fromStdString(initial->fio.name));
+        patronymic.setText(QString::fromStdString(initial->fio.patronymic));
+        instrument.setText(QString::fromStdString(initial->instrument));
+        teacherSurname.setText(QString::fromStdString(initial->teacher.surname));
+        teacherInitials.setText(QString::fromStdString(initial->teacher.initials));
+    }
+
+    layout.addRow("Фамилия", &surname);
+    layout.addRow("Имя", &name);
+    layout.addRow("Отчество", &patronymic);
+    layout.addRow("Инструмент", &instrument);
+    layout.addRow("Фамилия учителя", &teacherSurname);
+    layout.addRow("Инициалы учителя", &teacherInitials);
+
+    QDialogButtonBox buttons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    layout.addRow(&buttons);
+    connect(&buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(&buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        QStringList errors;
+        if (!validateFIO(surname.text(), name.text(), patronymic.text()))
+            errors << "FIO";
+        if (!validateInstrument(instrument.text()))
+            errors << "instrument";
+        if (!validateTeacher(teacherSurname.text(), teacherInitials.text()))
+            errors << "teacher initials";
+
+        if (!errors.isEmpty()) {
+            QMessageBox::warning(this, "Input Error",
+                                 QString("Invalid: %1").arg(errors.join(", ")));
+            return false;
+        }
+
+        out.fio.surname = surname.text().toStdString();
+        out.fio.name = name.text().toStdString();
+        out.fio.patronymic = patronymic.text().toStdString();
+        out.instrument = instrument.text().toStdString();
+        out.teacher.surname = teacherSurname.text().toStdString();
+        out.teacher.initials = teacherInitials.text().toStdString();
+        return true;
+    }
+    return false;
+}
+
+bool MainWindow::concertDialog(Concerts_entry& out, const Concerts_entry* initial)
+{
+    QDialog dialog(this);
+    dialog.setWindowTitle(initial ? "Редактировать концерт" : "Добавить концерт");
+    QFormLayout layout(&dialog);
+
+    QLabel currentLabel;
+    if (initial) {
+        QString cur = QString::fromStdString(initial->fio.surname + " " + initial->fio.name + " " +
+                                            initial->fio.patronymic + " - " + initial->play + " - " +
+                                            initial->hall + " - " + initial->date);
+        currentLabel.setText(cur);
+        layout.addRow(&currentLabel);
+    }
+
+    QLineEdit surname, name, patronymic, play, hall, date;
+    if (initial) {
+        surname.setText(QString::fromStdString(initial->fio.surname));
+        name.setText(QString::fromStdString(initial->fio.name));
+        patronymic.setText(QString::fromStdString(initial->fio.patronymic));
+        play.setText(QString::fromStdString(initial->play));
+        hall.setText(QString::fromStdString(initial->hall));
+        date.setText(QString::fromStdString(initial->date));
+    }
+
+    layout.addRow("Фамилия", &surname);
+    layout.addRow("Имя", &name);
+    layout.addRow("Отчество", &patronymic);
+    layout.addRow("Пьеса", &play);
+    layout.addRow("Зал", &hall);
+    layout.addRow("Дата", &date);
+
+    QDialogButtonBox buttons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    layout.addRow(&buttons);
+    connect(&buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(&buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        QStringList errors;
+        if (!validateFIO(surname.text(), name.text(), patronymic.text()))
+            errors << "FIO";
+        if (!validateHall(hall.text()))
+            errors << "hall";
+        if (!validateDate(date.text()))
+            errors << "date";
+
+        if (!errors.isEmpty()) {
+            QMessageBox::warning(this, "Input Error",
+                                 QString("Invalid: %1").arg(errors.join(", ")));
+            return false;
+        }
+
+        out.fio.surname = surname.text().toStdString();
+        out.fio.name = name.text().toStdString();
+        out.fio.patronymic = patronymic.text().toStdString();
+        out.play = play.text().toStdString();
+        out.hall = hall.text().toStdString();
+        out.date = date.text().toStdString();
+        return true;
+    }
+    return false;
+}
+
+void MainWindow::updateConcertTree()
+{
+    int row = ui->concertsTable->currentRow();
+    Concerts_entry* highlight = nullptr;
+    Concerts_entry temp;
+    if (row >= 0 && row < static_cast<int>(concertList.size())) {
+        temp = concertList[row];
+        highlight = &temp;
+    }
+
+    concerts->buildTreeWidget(ui->concertTree, highlight);
+}
+
+void MainWindow::updateReport()
+{
+    QString instFilter = ui->instrumentFilterEdit->text();
+    bool useInst = ui->instrumentFilterCheck->isChecked() && !instFilter.isEmpty();
+    QString hallFilter = ui->hallFilterEdit->text();
+    bool useHall = ui->hallFilterCheck->isChecked() && !hallFilter.isEmpty();
+    QDate selDate = ui->dateEdit->date();
+    bool useDate = ui->dateFilterCheck->isChecked();
+
+    std::vector<Concerts_entry> concertsList;
+    concerts->toVector(concertsList);
+    std::vector<std::array<QString,8>> rows;
+    for (const auto& c : concertsList) {
+        Students_entry st;
+        if (!students->find(c.fio, st))
+            continue;
+
+        QString inst = QString::fromStdString(st.instrument);
+        QString hall = QString::fromStdString(c.hall);
+        QString date = QString::fromStdString(c.date);
+
+        if (useInst && !inst.contains(instFilter, Qt::CaseInsensitive))
+            continue;
+        if (useHall && !hall.contains(hallFilter, Qt::CaseInsensitive))
+            continue;
+        if (useDate) {
+            QDate d = QDate::fromString(date, "dd.MM.yyyy");
+            if (!d.isValid() || d != selDate)
+                continue;
+        }
+
+        QString teacher = QString::fromStdString(st.teacher.surname + " " + st.teacher.initials);
+        rows.push_back({QString::fromStdString(c.fio.surname),
+                        QString::fromStdString(c.fio.name),
+                        QString::fromStdString(c.fio.patronymic),
+                        inst,
+                        teacher,
+                        QString::fromStdString(c.play),
+                        hall,
+                        date});
+    }
+    ui->reportTable->clear();
+    ui->reportTable->setColumnCount(8);
+    QStringList headers;
+    headers << "Фамилия" << "Имя" << "Отчество" << "Инструмент" << "Учитель" << "Пьеса" << "Зал" << "Дата";
+    ui->reportTable->setHorizontalHeaderLabels(headers);
+    ui->reportTable->setRowCount(static_cast<int>(rows.size()));
+    for (int i = 0; i < static_cast<int>(rows.size()); ++i) {
+        for (int j = 0; j < 8; ++j) {
+            QTableWidgetItem* item = new QTableWidgetItem(rows[i][j]);
+            item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+            item->setTextAlignment(Qt::AlignCenter);
+            ui->reportTable->setItem(i, j, item);
+        }
+    }
+}
+
+bool MainWindow::fioDialog(FIO& out, const FIO* initial, const QString& title)
+{
+    QDialog dialog(this);
+    dialog.setWindowTitle(title);
+    QFormLayout layout(&dialog);
+
+    QLineEdit surname, name, patronymic;
+    if (initial) {
+        surname.setText(QString::fromStdString(initial->surname));
+        name.setText(QString::fromStdString(initial->name));
+        patronymic.setText(QString::fromStdString(initial->patronymic));
+    }
+
+    layout.addRow("Фамилия", &surname);
+    layout.addRow("Имя", &name);
+    layout.addRow("Отчество", &patronymic);
+
+    QDialogButtonBox buttons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    layout.addRow(&buttons);
+    connect(&buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(&buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        QStringList errors;
+        if (!validateWord(surname.text()))
+            errors << "surname";
+        if (!validateWord(name.text()))
+            errors << "name";
+        if (!validateWord(patronymic.text()))
+            errors << "patronymic";
+
+        if (!errors.isEmpty()) {
+            QMessageBox::warning(this, "Input Error",
+                                 QString("Invalid: %1").arg(errors.join(", ")));
+            return false;
+        }
+
+        out.surname = surname.text().toStdString();
+        out.name = name.text().toStdString();
+        out.patronymic = patronymic.text().toStdString();
+        return true;
+    }
+    return false;
+}
+
+void MainWindow::studentCellChanged(int row, int column)
+{
+    if (row < 0 || row >= static_cast<int>(studentRowMap.size()))
+        return;
+    int index = studentRowMap[row];
+    if (!students->isOccupied(index))
+        return;
+    Students_entry oldEntry = students->getEntry(index);
+    Students_entry newEntry = oldEntry;
+
+    auto getText = [&](int col, const std::string& oldVal) {
+        QTableWidgetItem* item = ui->studentsTable->item(row, col);
+        return item ? item->text().toStdString() : oldVal;
+    };
+
+    newEntry.fio.surname = getText(0, oldEntry.fio.surname);
+    newEntry.fio.name = getText(1, oldEntry.fio.name);
+    newEntry.fio.patronymic = getText(2, oldEntry.fio.patronymic);
+    newEntry.instrument = getText(3, oldEntry.instrument);
+    std::string teacher = getText(4, oldEntry.teacher.surname + " " + oldEntry.teacher.initials);
+    size_t sp = teacher.find(' ');
+    if (sp == std::string::npos) {
+        newEntry.teacher.surname = teacher;
+        newEntry.teacher.initials.clear();
+    } else {
+        newEntry.teacher.surname = teacher.substr(0, sp);
+        newEntry.teacher.initials = teacher.substr(sp + 1);
+    }
+
+    if (newEntry.fio == oldEntry.fio && newEntry.instrument == oldEntry.instrument &&
+        newEntry.teacher.surname == oldEntry.teacher.surname && newEntry.teacher.initials == oldEntry.teacher.initials)
+        return;
+
+    QStringList errors;
+    if (!validateFIO(QString::fromStdString(newEntry.fio.surname),
+                     QString::fromStdString(newEntry.fio.name),
+                     QString::fromStdString(newEntry.fio.patronymic)))
+        errors << "FIO";
+    if (!validateInstrument(QString::fromStdString(newEntry.instrument)))
+        errors << "instrument";
+    if (!validateTeacher(QString::fromStdString(newEntry.teacher.surname),
+                         QString::fromStdString(newEntry.teacher.initials)))
+        errors << "teacher initials";
+
+    if (!errors.isEmpty()) {
+        QMessageBox::warning(this, "Input Error",
+                             QString("Invalid: %1").arg(errors.join(", ")));
+        refreshTables();
+        return;
+    }
+
+    students->remove(oldEntry.fio);
+    students->insert(newEntry);
+    refreshTables();
+    ui->studentsTable->setCurrentCell(row, column);
+}
+
+void MainWindow::concertCellChanged(int row, int column)
+{
+    if (row < 0 || row >= static_cast<int>(concertList.size()))
+        return;
+
+    Concerts_entry oldEntry = concertList[row];
+    Concerts_entry newEntry = oldEntry;
+
+    auto getText = [&](int col, const std::string& oldVal) {
+        QTableWidgetItem* item = ui->concertsTable->item(row, col);
+        return item ? item->text().toStdString() : oldVal;
+    };
+
+    newEntry.fio.surname = getText(0, oldEntry.fio.surname);
+    newEntry.fio.name = getText(1, oldEntry.fio.name);
+    newEntry.fio.patronymic = getText(2, oldEntry.fio.patronymic);
+    newEntry.play = getText(3, oldEntry.play);
+    newEntry.hall = getText(4, oldEntry.hall);
+    newEntry.date = getText(5, oldEntry.date);
+
+    if (newEntry.fio == oldEntry.fio && newEntry.play == oldEntry.play &&
+        newEntry.hall == oldEntry.hall && newEntry.date == oldEntry.date)
+        return;
+
+    QStringList errors;
+    if (!validateFIO(QString::fromStdString(newEntry.fio.surname),
+                     QString::fromStdString(newEntry.fio.name),
+                     QString::fromStdString(newEntry.fio.patronymic)))
+        errors << "FIO";
+    if (!validateHall(QString::fromStdString(newEntry.hall)))
+        errors << "hall";
+    if (!validateDate(QString::fromStdString(newEntry.date)))
+        errors << "date";
+
+    if (!errors.isEmpty()) {
+        QMessageBox::warning(this, "Input Error",
+                             QString("Invalid: %1").arg(errors.join(", ")));
+        refreshTables();
+        return;
+    }
+
+    concerts->remove(oldEntry.fio);
+    concerts->insert(newEntry);
+    refreshTables();
+    ui->concertsTable->setCurrentCell(row, column);
+}
+
+void MainWindow::studentContextMenu(const QPoint& pos)
+{
+    int row = ui->studentsTable->rowAt(pos.y());
+    if (row < 0 || row >= static_cast<int>(studentRowMap.size()))
+        return;
+    ui->studentsTable->setCurrentCell(row, 0);
+    QMenu menu(this);
+    QAction* edit = menu.addAction("Изменить");
+    QAction* remove = menu.addAction("Удалить");
+    QAction* chosen = menu.exec(ui->studentsTable->viewport()->mapToGlobal(pos));
+    if (chosen == edit) {
+        editStudent();
+    } else if (chosen == remove) {
+        Students_entry entry = students->getEntry(studentRowMap[row]);
+        students->remove(entry.fio);
+        refreshTables();
+    }
+}
+
+void MainWindow::concertContextMenu(const QPoint& pos)
+{
+    int row = ui->concertsTable->rowAt(pos.y());
+    if (row < 0 || row >= static_cast<int>(concertList.size()))
+        return;
+    ui->concertsTable->setCurrentCell(row, 0);
+    QMenu menu(this);
+    QAction* edit = menu.addAction("Изменить");
+    QAction* remove = menu.addAction("Удалить");
+    QAction* chosen = menu.exec(ui->concertsTable->viewport()->mapToGlobal(pos));
+    if (chosen == edit) {
+        editConcert();
+    } else if (chosen == remove) {
+        concerts->remove(concertList[row].fio);
+        refreshTables();
+    }
+}
+
+bool MainWindow::validateWord(const QString& word) const
+{
+    QRegularExpression pat("^[А-ЯЁ][а-яё]+$");
+    return pat.match(word).hasMatch();
+}
+
+bool MainWindow::validateFIO(const QString& s, const QString& n, const QString& p) const
+{
+    return validateWord(s) && validateWord(n) && validateWord(p);
+}
+
+bool MainWindow::validateInstrument(const QString& instrument) const
+{
+    QRegularExpression pat("^[А-Яа-яЁё]+( [А-Яа-яЁё]+)*$");
+    return pat.match(instrument).hasMatch();
+}
+
+bool MainWindow::validateTeacher(const QString& surname, const QString& initials) const
+{
+    QRegularExpression sPat("^[А-ЯЁ][а-яё]+$");
+    QRegularExpression iPat("^[А-ЯЁ]\\.[А-ЯЁ]\\.$");
+    return sPat.match(surname).hasMatch() && iPat.match(initials).hasMatch();
+}
+
+
+bool MainWindow::validateHall(const QString& hall) const
+{
+    QRegularExpression pat("^[А-Яа-яЁё]+ зал$");
+    return pat.match(hall).hasMatch();
+}
+
+bool MainWindow::validateDate(const QString& date) const
+{
+    QRegularExpression pat("^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[0-2])\\.[0-9]{4}$");
+    return pat.match(date).hasMatch();
+}
+
+void MainWindow::exportStudents()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, "Выгрузить студентов",
+                                                   studentFile,
+                                                   "Text files (*.txt)");
+    if (fileName.isEmpty())
+        return;
+    studentFile = fileName;
+    std::ofstream out(fileName.toStdString());
+    if (!out.is_open()) {
+        QMessageBox::warning(this, "Ошибка", "Не удалось открыть файл");
+        return;
+    }
+    for (int i = 0; i < students->getFullSize(); ++i) {
+        if (students->isOccupied(i)) {
+            const auto& st = students->getEntry(i);
+            out << st.fio.surname << ' ' << st.fio.name << ' ' << st.fio.patronymic
+                << ' ' << st.instrument << ' ' << st.teacher.surname << ' '
+                << st.teacher.initials << '\n';
+        }
+    }
+}
+
+void MainWindow::exportConcerts()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, "Выгрузить концерты",
+                                                   concertFile,
+                                                   "Text files (*.txt)");
+    if (fileName.isEmpty())
+        return;
+    concertFile = fileName;
+    std::ofstream out(fileName.toStdString());
+    if (!out.is_open()) {
+        QMessageBox::warning(this, "Ошибка", "Не удалось открыть файл");
+        return;
+    }
+    std::vector<Concerts_entry> vec;
+    concerts->toVector(vec);
+    for (const auto& c : vec) {
+        out << c.fio.surname << ' ' << c.fio.name << ' ' << c.fio.patronymic
+            << " \"" << c.play << "\" " << c.hall << ' ' << c.date << '\n';
+    }
+}
+
+void MainWindow::exportReport()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, "Сохранить отчёт", QString(),
+                                                   "Text files (*.txt)");
+    if (fileName.isEmpty())
+        return;
+    std::ofstream out(fileName.toStdString());
+    if (!out.is_open()) {
+        QMessageBox::warning(this, "Ошибка", "Не удалось открыть файл");
+        return;
+    }
+    QString instFilter = ui->instrumentFilterEdit->text();
+    bool useInst = ui->instrumentFilterCheck->isChecked() && !instFilter.isEmpty();
+    QString hallFilter = ui->hallFilterEdit->text();
+    bool useHall = ui->hallFilterCheck->isChecked() && !hallFilter.isEmpty();
+    QDate selDate = ui->dateEdit->date();
+    bool useDate = ui->dateFilterCheck->isChecked();
+
+    std::vector<Concerts_entry> concertsList;
+    concerts->toVector(concertsList);
+    for (const auto& c : concertsList) {
+        Students_entry st;
+        if (!students->find(c.fio, st))
+            continue;
+
+        QString inst = QString::fromStdString(st.instrument);
+        QString hall = QString::fromStdString(c.hall);
+        QString date = QString::fromStdString(c.date);
+
+        if (useInst && !inst.contains(instFilter, Qt::CaseInsensitive))
+            continue;
+        if (useHall && !hall.contains(hallFilter, Qt::CaseInsensitive))
+            continue;
+        if (useDate) {
+            QDate d = QDate::fromString(date, "dd.MM.yyyy");
+            if (!d.isValid() || d != selDate)
+                continue;
+        }
+
+        out << c.fio.surname << ' ' << c.fio.name << ' ' << c.fio.patronymic << ' '
+            << st.instrument << ' ' << st.teacher.surname << ' ' << st.teacher.initials
+            << " \"" << c.play << "\" " << c.hall << ' ' << c.date << '\n';
+    }
 }
 

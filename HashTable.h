@@ -14,8 +14,8 @@ private:
     };
 
     Entry* table;
-    int size;
     int fullSize;
+    int size;
 
     int calculateKey(const FIO& fio) const {
         std::string fullName = fio.surname + fio.name + fio.patronymic;
@@ -73,7 +73,7 @@ private:
 
 public:
     HashTable(int initSize)
-        : fullSize(initSize), size(0) {
+        : table(nullptr), fullSize(initSize), size(0) {
         table = new Entry[fullSize];
         for (int i = 0; i < fullSize; i++) {
             table[i].status = 0;
@@ -176,10 +176,17 @@ public:
 
     // additional search helpers for GUI
     bool find(const FIO& fio, Students_entry& res) const {
+        int dummy;
+        return find(fio, res, dummy);
+    }
+
+    bool find(const FIO& fio, Students_entry& res, int& steps) const {
         int key = calculateKey(fio);
         int j = 0;
         int index;
+        steps = 0;
         do {
+            steps++;
             index = hash(key, j, fullSize);
             if (table[index].status == 0) {
                 return false;
