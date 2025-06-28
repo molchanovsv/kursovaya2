@@ -1,10 +1,13 @@
 #include "StudentActions.h"
+#include "ui_mainwindow.h"
 #include <QDialog>
 #include <QFormLayout>
 #include <QPushButton>
 #include <QDialogButtonBox>
 #include <QMessageBox>
 #include <QMenu>
+#include <QLineEdit>
+#include <QTableWidgetItem>
 
 
 void MainWindow::addStudent()

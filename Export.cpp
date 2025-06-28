@@ -1,8 +1,11 @@
 #include "Export.h"
+#include "ui_mainwindow.h"
 #include <QFileDialog>
 #include <QDate>
 #include <fstream>
 #include <array>
+#include <QMessageBox>
+#include <QTableWidgetItem>
 
 void MainWindow::updateReport()
 {
