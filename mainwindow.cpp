@@ -74,9 +74,8 @@ void MainWindow::addStudent()
 void MainWindow::removeStudent()
 {
     FIO f;
-    f.surname = QInputDialog::getText(this, "Surname", "Surname").toStdString();
-    f.name = QInputDialog::getText(this, "Name", "Name").toStdString();
-    f.patronymic = QInputDialog::getText(this, "Patronymic", "Patronymic").toStdString();
+    if (!fioDialog(f, nullptr, "Remove Student"))
+        return;
     students->remove(f);
     refreshTables();
 }
@@ -111,9 +110,8 @@ void MainWindow::addConcert()
 void MainWindow::removeConcert()
 {
     FIO f;
-    f.surname = QInputDialog::getText(this, "Surname", "Surname").toStdString();
-    f.name = QInputDialog::getText(this, "Name", "Name").toStdString();
-    f.patronymic = QInputDialog::getText(this, "Patronymic", "Patronymic").toStdString();
+    if (!fioDialog(f, nullptr, "Remove Concert"))
+        return;
     concerts->remove(f);
     refreshTables();
 }
@@ -301,5 +299,36 @@ void MainWindow::updateConcertTree()
     }
 
     concerts->buildTreeWidget(ui->concertTree, highlight);
+}
+
+bool MainWindow::fioDialog(FIO& out, const FIO* initial, const QString& title)
+{
+    QDialog dialog(this);
+    dialog.setWindowTitle(title);
+    QFormLayout layout(&dialog);
+
+    QLineEdit surname, name, patronymic;
+    if (initial) {
+        surname.setText(QString::fromStdString(initial->surname));
+        name.setText(QString::fromStdString(initial->name));
+        patronymic.setText(QString::fromStdString(initial->patronymic));
+    }
+
+    layout.addRow("Surname", &surname);
+    layout.addRow("Name", &name);
+    layout.addRow("Patronymic", &patronymic);
+
+    QDialogButtonBox buttons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    layout.addRow(&buttons);
+    connect(&buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(&buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        out.surname = surname.text().toStdString();
+        out.name = name.text().toStdString();
+        out.patronymic = patronymic.text().toStdString();
+        return true;
+    }
+    return false;
 }
 

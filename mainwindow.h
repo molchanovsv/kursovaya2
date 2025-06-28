@@ -34,6 +34,7 @@ private:
 
     bool studentDialog(Students_entry& out, const Students_entry* initial = nullptr);
     bool concertDialog(Concerts_entry& out, const Concerts_entry* initial = nullptr);
+    bool fioDialog(FIO& out, const FIO* initial = nullptr, const QString& title = "Enter FIO");
 };
 
 #endif
