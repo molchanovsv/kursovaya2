@@ -63,7 +63,8 @@ void MainWindow::refreshTables()
     ui->clearStudentSearchButton->setVisible(studentFilterActive);
     ui->clearConcertSearchButton->setVisible(concertFilterActive);
     ui->studentsTable->blockSignals(true);
-    ui->studentsTable->clear();
+    ui->studentsTable->clearContents();
+    ui->studentsTable->setRowCount(0);
     ui->studentsTable->setColumnCount(5);
     QStringList studentHeaders;
     studentHeaders << "Фамилия" << "Имя" << "Отчество" << "Инструмент" << "Учитель";
@@ -92,6 +93,7 @@ void MainWindow::refreshTables()
                 if (!sTeacher.isEmpty() && !teacher.contains(sTeacher, Qt::CaseInsensitive))
                     continue;
             }
+            ui->studentsTable->insertRow(row);
             QTableWidgetItem* vh = new QTableWidgetItem(QString::number(i));
             vh->setTextAlignment(Qt::AlignCenter);
             ui->studentsTable->setVerticalHeaderItem(row, vh);
@@ -142,14 +144,15 @@ void MainWindow::refreshTables()
         concertList.push_back(e);
     }
     ui->concertsTable->blockSignals(true);
-    ui->concertsTable->clear();
+    ui->concertsTable->clearContents();
+    ui->concertsTable->setRowCount(0);
     ui->concertsTable->setColumnCount(6);
     QStringList headers;
     headers << "Фамилия" << "Имя" << "Отчество" << "Пьеса" << "Зал" << "Дата";
     ui->concertsTable->setHorizontalHeaderLabels(headers);
     int count = static_cast<int>(concertList.size());
-    ui->concertsTable->setRowCount(count);
     for (int i = 0; i < count; ++i) {
+        ui->concertsTable->insertRow(i);
         const auto& e = concertList[i];
         auto makeItem = [](const QString& t) {
             QTableWidgetItem* it = new QTableWidgetItem(t);
