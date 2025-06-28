@@ -30,6 +30,9 @@ private:
     Ui::MainWindow *ui;
     HashTable* students;
     AVLTree* concerts;
+
+    bool studentDialog(Students_entry& out, const Students_entry* initial = nullptr);
+    bool concertDialog(Concerts_entry& out, const Concerts_entry* initial = nullptr);
 };
 
 #endif

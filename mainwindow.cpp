@@ -2,6 +2,11 @@
 #include "ui_mainwindow.h"
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QDialog>
+#include <QFormLayout>
+#include <QLineEdit>
+#include <QLabel>
+#include <QDialogButtonBox>
 
 MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree, QWidget* parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), students(studentsTable), concerts(concertTree)
@@ -49,14 +54,10 @@ void MainWindow::refreshTables()
 void MainWindow::addStudent()
 {
     Students_entry se;
-    se.fio.surname = QInputDialog::getText(this, "Surname", "Surname").toStdString();
-    se.fio.name = QInputDialog::getText(this, "Name", "Name").toStdString();
-    se.fio.patronymic = QInputDialog::getText(this, "Patronymic", "Patronymic").toStdString();
-    se.instrument = QInputDialog::getText(this, "Instrument", "Instrument").toStdString();
-    se.teacher.surname = QInputDialog::getText(this, "Teacher surname", "Teacher surname").toStdString();
-    se.teacher.initials = QInputDialog::getText(this, "Teacher initials", "Teacher initials").toStdString();
-    students->insert(se);
-    refreshTables();
+    if (studentDialog(se)) {
+        students->insert(se);
+        refreshTables();
+    }
 }
 
 void MainWindow::removeStudent()
@@ -71,31 +72,29 @@ void MainWindow::removeStudent()
 
 void MainWindow::editStudent()
 {
-    FIO f;
-    f.surname = QInputDialog::getText(this, "Surname", "Surname").toStdString();
-    f.name = QInputDialog::getText(this, "Name", "Name").toStdString();
-    f.patronymic = QInputDialog::getText(this, "Patronymic", "Patronymic").toStdString();
-    students->remove(f);
-    Students_entry se;
-    se.fio = f;
-    se.instrument = QInputDialog::getText(this, "Instrument", "Instrument").toStdString();
-    se.teacher.surname = QInputDialog::getText(this, "Teacher surname", "Teacher surname").toStdString();
-    se.teacher.initials = QInputDialog::getText(this, "Teacher initials", "Teacher initials").toStdString();
-    students->insert(se);
+    int row = ui->studentsTable->currentRow();
+    if (row < 0 || !ui->studentsTable->item(row, 0)) {
+        QMessageBox::warning(this, "Edit Student", "Select a student in the table.");
+        return;
+    }
+
+    Students_entry oldEntry = students->getEntry(row);
+    Students_entry newEntry = oldEntry;
+    if (!studentDialog(newEntry, &oldEntry))
+        return;
+
+    students->remove(oldEntry.fio);
+    students->insert(newEntry);
     refreshTables();
 }
 
 void MainWindow::addConcert()
 {
     Concerts_entry e;
-    e.fio.surname = QInputDialog::getText(this, "Surname", "Surname").toStdString();
-    e.fio.name = QInputDialog::getText(this, "Name", "Name").toStdString();
-    e.fio.patronymic = QInputDialog::getText(this, "Patronymic", "Patronymic").toStdString();
-    e.play = QInputDialog::getText(this, "Play", "Play").toStdString();
-    e.hall = QInputDialog::getText(this, "Hall", "Hall").toStdString();
-    e.date = QInputDialog::getText(this, "Date", "Date").toStdString();
-    concerts->insert(e);
-    refreshTables();
+    if (concertDialog(e)) {
+        concerts->insert(e);
+        refreshTables();
+    }
 }
 
 void MainWindow::removeConcert()
@@ -110,17 +109,21 @@ void MainWindow::removeConcert()
 
 void MainWindow::editConcert()
 {
-    FIO f;
-    f.surname = QInputDialog::getText(this, "Surname", "Surname").toStdString();
-    f.name = QInputDialog::getText(this, "Name", "Name").toStdString();
-    f.patronymic = QInputDialog::getText(this, "Patronymic", "Patronymic").toStdString();
-    concerts->remove(f);
-    Concerts_entry e;
-    e.fio = f;
-    e.play = QInputDialog::getText(this, "Play", "Play").toStdString();
-    e.hall = QInputDialog::getText(this, "Hall", "Hall").toStdString();
-    e.date = QInputDialog::getText(this, "Date", "Date").toStdString();
-    concerts->insert(e);
+    int row = ui->concertsTable->currentRow();
+    std::vector<Concerts_entry> list;
+    concerts->toVector(list);
+    if (row < 0 || row >= list.size()) {
+        QMessageBox::warning(this, "Edit Concert", "Select a concert in the table.");
+        return;
+    }
+
+    Concerts_entry oldEntry = list[row];
+    Concerts_entry newEntry = oldEntry;
+    if (!concertDialog(newEntry, &oldEntry))
+        return;
+
+    concerts->remove(oldEntry.fio);
+    concerts->insert(newEntry);
     refreshTables();
 }
 
@@ -174,5 +177,103 @@ void MainWindow::searchConcert()
     if (text.isEmpty())
         text = "Not found";
     QMessageBox::information(this, "Results", text);
+}
+
+bool MainWindow::studentDialog(Students_entry& out, const Students_entry* initial)
+{
+    QDialog dialog(this);
+    dialog.setWindowTitle(initial ? "Edit Student" : "Add Student");
+    QFormLayout layout(&dialog);
+
+    QLabel currentLabel;
+    if (initial) {
+        QString cur = QString::fromStdString(initial->fio.surname + " " + initial->fio.name + " " +
+                                            initial->fio.patronymic + " - " + initial->instrument +
+                                            " (" + initial->teacher.surname + " " + initial->teacher.initials + ")");
+        currentLabel.setText(cur);
+        layout.addRow(&currentLabel);
+    }
+
+    QLineEdit surname, name, patronymic, instrument, teacherSurname, teacherInitials;
+    if (initial) {
+        surname.setText(QString::fromStdString(initial->fio.surname));
+        name.setText(QString::fromStdString(initial->fio.name));
+        patronymic.setText(QString::fromStdString(initial->fio.patronymic));
+        instrument.setText(QString::fromStdString(initial->instrument));
+        teacherSurname.setText(QString::fromStdString(initial->teacher.surname));
+        teacherInitials.setText(QString::fromStdString(initial->teacher.initials));
+    }
+
+    layout.addRow("Surname", &surname);
+    layout.addRow("Name", &name);
+    layout.addRow("Patronymic", &patronymic);
+    layout.addRow("Instrument", &instrument);
+    layout.addRow("Teacher surname", &teacherSurname);
+    layout.addRow("Teacher initials", &teacherInitials);
+
+    QDialogButtonBox buttons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    layout.addRow(&buttons);
+    connect(&buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(&buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        out.fio.surname = surname.text().toStdString();
+        out.fio.name = name.text().toStdString();
+        out.fio.patronymic = patronymic.text().toStdString();
+        out.instrument = instrument.text().toStdString();
+        out.teacher.surname = teacherSurname.text().toStdString();
+        out.teacher.initials = teacherInitials.text().toStdString();
+        return true;
+    }
+    return false;
+}
+
+bool MainWindow::concertDialog(Concerts_entry& out, const Concerts_entry* initial)
+{
+    QDialog dialog(this);
+    dialog.setWindowTitle(initial ? "Edit Concert" : "Add Concert");
+    QFormLayout layout(&dialog);
+
+    QLabel currentLabel;
+    if (initial) {
+        QString cur = QString::fromStdString(initial->fio.surname + " " + initial->fio.name + " " +
+                                            initial->fio.patronymic + " - " + initial->play + " - " +
+                                            initial->hall + " - " + initial->date);
+        currentLabel.setText(cur);
+        layout.addRow(&currentLabel);
+    }
+
+    QLineEdit surname, name, patronymic, play, hall, date;
+    if (initial) {
+        surname.setText(QString::fromStdString(initial->fio.surname));
+        name.setText(QString::fromStdString(initial->fio.name));
+        patronymic.setText(QString::fromStdString(initial->fio.patronymic));
+        play.setText(QString::fromStdString(initial->play));
+        hall.setText(QString::fromStdString(initial->hall));
+        date.setText(QString::fromStdString(initial->date));
+    }
+
+    layout.addRow("Surname", &surname);
+    layout.addRow("Name", &name);
+    layout.addRow("Patronymic", &patronymic);
+    layout.addRow("Play", &play);
+    layout.addRow("Hall", &hall);
+    layout.addRow("Date", &date);
+
+    QDialogButtonBox buttons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    layout.addRow(&buttons);
+    connect(&buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(&buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        out.fio.surname = surname.text().toStdString();
+        out.fio.name = name.text().toStdString();
+        out.fio.patronymic = patronymic.text().toStdString();
+        out.play = play.text().toStdString();
+        out.hall = hall.text().toStdString();
+        out.date = date.text().toStdString();
+        return true;
+    }
+    return false;
 }
 
