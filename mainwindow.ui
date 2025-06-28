@@ -13,14 +13,21 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="mainLayout">
     <item>
-     <widget class="QSplitter" name="mainSplitter">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <widget class="QWidget" name="studentsPanel">
-       <layout class="QVBoxLayout" name="verticalLayout">
+     <widget class="QTabWidget" name="tabWidget">
+      <widget class="QWidget" name="mainTab">
+       <attribute name="title">
+        <string>Main</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="tabMainLayout">
         <item>
-         <widget class="QTableWidget" name="studentsTable"/>
+         <widget class="QSplitter" name="mainSplitter">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <widget class="QWidget" name="studentsPanel">
+           <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+             <widget class="QTableWidget" name="studentsTable"/>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
@@ -56,21 +63,21 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="concertsPanel">
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <widget class="QSplitter" name="concertsSplitter">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <widget class="QTableWidget" name="concertsTable"/>
-          <widget class="QTreeWidget" name="concertTree"/>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
-          <item>
-           <widget class="QPushButton" name="addConcertButton">
+          <widget class="QWidget" name="concertsPanel">
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <item>
+             <widget class="QSplitter" name="concertsSplitter">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <widget class="QTableWidget" name="concertsTable"/>
+              <widget class="QTreeWidget" name="concertTree"/>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <item>
+               <widget class="QPushButton" name="addConcertButton">
             <property name="text">
              <string>Add</string>
             </property>
@@ -96,8 +103,22 @@
              <string>Search</string>
             </property>
            </widget>
-          </item>
-         </layout>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="reportTab">
+       <attribute name="title">
+        <string>Отчёт</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <widget class="QTableWidget" name="reportTable"/>
         </item>
        </layout>
       </widget>

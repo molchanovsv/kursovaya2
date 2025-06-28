@@ -12,6 +12,7 @@
 #include <QRegularExpression>
 #include <QMenu>
 #include <vector>
+#include <array>
 #include <sstream>
 #include "FIO.h"
 
@@ -92,6 +93,7 @@ void MainWindow::refreshTables()
     }
     ui->concertsTable->blockSignals(false);
     updateConcertTree();
+    updateReport();
 }
 
 void MainWindow::addStudent()
@@ -360,6 +362,37 @@ void MainWindow::updateConcertTree()
     }
 
     concerts->buildTreeWidget(ui->concertTree, highlight);
+}
+
+void MainWindow::updateReport()
+{
+    std::vector<Concerts_entry> concertsList;
+    concerts->toVector(concertsList);
+    std::vector<std::array<QString,6>> rows;
+    for (const auto& c : concertsList) {
+        Students_entry st;
+        if (students->find(c.fio, st)) {
+            QString fio = QString::fromStdString(c.fio.surname + " " + c.fio.name + " " + c.fio.patronymic);
+            QString teacher = QString::fromStdString(st.teacher.surname + " " + st.teacher.initials);
+            rows.push_back({fio,
+                            QString::fromStdString(st.instrument),
+                            teacher,
+                            QString::fromStdString(c.play),
+                            QString::fromStdString(c.hall),
+                            QString::fromStdString(c.date)});
+        }
+    }
+    ui->reportTable->clear();
+    ui->reportTable->setColumnCount(6);
+    QStringList headers;
+    headers << "FIO" << "Instrument" << "Teacher" << "Play" << "Hall" << "Date";
+    ui->reportTable->setHorizontalHeaderLabels(headers);
+    ui->reportTable->setRowCount(static_cast<int>(rows.size()));
+    for (int i = 0; i < static_cast<int>(rows.size()); ++i) {
+        for (int j = 0; j < 6; ++j) {
+            ui->reportTable->setItem(i, j, new QTableWidgetItem(rows[i][j]));
+        }
+    }
 }
 
 bool MainWindow::fioDialog(FIO& out, const FIO* initial, const QString& title)

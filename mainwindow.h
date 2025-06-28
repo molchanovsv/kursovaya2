@@ -27,6 +27,7 @@ private slots:
     void searchStudent();
     void searchConcert();
     void updateConcertTree();
+    void updateReport();
     void studentCellChanged(int row, int column);
     void concertCellChanged(int row, int column);
     void studentContextMenu(const QPoint& pos);
