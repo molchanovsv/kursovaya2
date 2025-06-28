@@ -313,8 +313,6 @@ bool MainWindow::concertDialog(Concerts_entry& out, const Concerts_entry* initia
         QStringList errors;
         if (!validateFIO(surname.text(), name.text(), patronymic.text()))
             errors << "FIO";
-        if (!validatePlay(play.text()))
-            errors << "play";
         if (!validateHall(hall.text()))
             errors << "hall";
         if (!validateDate(date.text()))
@@ -485,8 +483,6 @@ void MainWindow::concertCellChanged(int row, int column)
                      QString::fromStdString(newEntry.fio.name),
                      QString::fromStdString(newEntry.fio.patronymic)))
         errors << "FIO";
-    if (!validatePlay(QString::fromStdString(newEntry.play)))
-        errors << "play";
     if (!validateHall(QString::fromStdString(newEntry.hall)))
         errors << "hall";
     if (!validateDate(QString::fromStdString(newEntry.date)))
@@ -529,11 +525,6 @@ bool MainWindow::validateTeacher(const QString& surname, const QString& initials
     return sPat.match(surname).hasMatch() && iPat.match(initials).hasMatch();
 }
 
-bool MainWindow::validatePlay(const QString& play) const
-{
-    QRegularExpression pat("^\".*\"$");
-    return pat.match(play).hasMatch();
-}
 
 bool MainWindow::validateHall(const QString& hall) const
 {

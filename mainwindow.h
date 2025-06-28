@@ -41,7 +41,6 @@ private:
     bool validateWord(const QString& word) const;
     bool validateInstrument(const QString& instrument) const;
     bool validateTeacher(const QString& surname, const QString& initials) const;
-    bool validatePlay(const QString& play) const;
     bool validateHall(const QString& hall) const;
     bool validateDate(const QString& date) const;
 };
