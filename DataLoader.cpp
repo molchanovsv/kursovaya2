@@ -16,12 +16,12 @@ namespace {
 }
 
 namespace DataLoader {
-    Students_entry* loadStudents(int n, int& count) {
-        const std::string filename = "students.txt";
-        qDebug() << "Loading students from" << QString::fromStdString(filename);
-        std::ifstream input(filename);
+    Students_entry* loadStudents(int n, int& count, const std::string& filename) {
+        std::string fname = filename.empty() ? "students.txt" : filename;
+        qDebug() << "Loading students from" << QString::fromStdString(fname);
+        std::ifstream input(fname);
         if (!input.is_open()) {
-            std::cerr << "Не удалось открыть файл " << filename << std::endl;
+            std::cerr << "Не удалось открыть файл " << fname << std::endl;
             count = 0;
             return new Students_entry[n];
         }
