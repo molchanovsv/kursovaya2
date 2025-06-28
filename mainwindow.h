@@ -38,6 +38,7 @@ private:
     HashTable* students;
     AVLTree* concerts;
     std::vector<int> studentRowMap;
+    std::vector<Concerts_entry> concertList;
 
     bool studentDialog(Students_entry& out, const Students_entry* initial = nullptr);
     bool concertDialog(Concerts_entry& out, const Concerts_entry* initial = nullptr);

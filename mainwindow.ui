@@ -59,12 +59,29 @@
             </property>
            </widget>
           </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="studentFilterLayout">
           <item>
-           <widget class="QPushButton" name="searchStudentButton">
+           <widget class="QCheckBox" name="nameFilterCheck">
             <property name="text">
-             <string>Поиск</string>
+             <string>ФИО</string>
             </property>
            </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="nameFilterEdit"/>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="instrFilterCheck">
+            <property name="text">
+             <string>Инструмент</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="instrFilterEdit"/>
           </item>
          </layout>
         </item>
@@ -117,6 +134,37 @@
              <string>Поиск</string>
             </property>
            </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="concertFilterLayout">
+              <item>
+               <widget class="QCheckBox" name="concertHallFilterCheck">
+                <property name="text">
+                 <string>Зал</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="concertHallFilterEdit"/>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="concertDateFilterCheck">
+                <property name="text">
+                 <string>Дата</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QDateEdit" name="concertDateFilterEdit">
+                <property name="calendarPopup">
+                 <bool>true</bool>
+                </property>
+                <property name="displayFormat">
+                 <string>dd.MM.yyyy</string>
+                </property>
+               </widget>
               </item>
              </layout>
             </item>

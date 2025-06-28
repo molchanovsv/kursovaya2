@@ -11,6 +11,7 @@
 #include <QBrush>
 #include <QRegularExpression>
 #include <QMenu>
+#include <QDate>
 #include <vector>
 #include <array>
 #include <sstream>
@@ -41,6 +42,14 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree, QWidget* 
     connect(ui->instrumentFilterCheck, &QCheckBox::toggled, this, &MainWindow::updateReport);
     connect(ui->hallFilterCheck, &QCheckBox::toggled, this, &MainWindow::updateReport);
     connect(ui->dateFilterCheck, &QCheckBox::toggled, this, &MainWindow::updateReport);
+    connect(ui->nameFilterEdit, &QLineEdit::textChanged, this, &MainWindow::refreshTables);
+    connect(ui->instrFilterEdit, &QLineEdit::textChanged, this, &MainWindow::refreshTables);
+    connect(ui->nameFilterCheck, &QCheckBox::toggled, this, &MainWindow::refreshTables);
+    connect(ui->instrFilterCheck, &QCheckBox::toggled, this, &MainWindow::refreshTables);
+    connect(ui->concertHallFilterEdit, &QLineEdit::textChanged, this, &MainWindow::refreshTables);
+    connect(ui->concertDateFilterEdit, &QDateEdit::dateChanged, this, &MainWindow::refreshTables);
+    connect(ui->concertHallFilterCheck, &QCheckBox::toggled, this, &MainWindow::refreshTables);
+    connect(ui->concertDateFilterCheck, &QCheckBox::toggled, this, &MainWindow::refreshTables);
     ui->concertTree->setHeaderHidden(true);
     ui->reportTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->studentsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -64,13 +73,25 @@ void MainWindow::refreshTables()
     QStringList studentHeaders;
     studentHeaders << "Фамилия" << "Имя" << "Отчество" << "Инструмент" << "Учитель";
     ui->studentsTable->setHorizontalHeaderLabels(studentHeaders);
+    QString nameFilter = ui->nameFilterEdit->text();
+    bool useName = ui->nameFilterCheck->isChecked() && !nameFilter.isEmpty();
+    QString instrFilter = ui->instrFilterEdit->text();
+    bool useInstr = ui->instrFilterCheck->isChecked() && !instrFilter.isEmpty();
     studentRowMap.clear();
-    int total = students->getSize();
-    ui->studentsTable->setRowCount(total);
     int row = 0;
     for (int i = 0; i < students->getFullSize(); ++i) {
         if (students->isOccupied(i)) {
             const auto& st = students->getEntry(i);
+            QString sur = QString::fromStdString(st.fio.surname);
+            QString nam = QString::fromStdString(st.fio.name);
+            QString pat = QString::fromStdString(st.fio.patronymic);
+            QString instr = QString::fromStdString(st.instrument);
+            if (useName && !sur.contains(nameFilter, Qt::CaseInsensitive) &&
+                !nam.contains(nameFilter, Qt::CaseInsensitive) &&
+                !pat.contains(nameFilter, Qt::CaseInsensitive))
+                continue;
+            if (useInstr && !instr.contains(instrFilter, Qt::CaseInsensitive))
+                continue;
             QTableWidgetItem* vh = new QTableWidgetItem(QString::number(i));
             vh->setTextAlignment(Qt::AlignCenter);
             ui->studentsTable->setVerticalHeaderItem(row, vh);
@@ -90,20 +111,38 @@ void MainWindow::refreshTables()
             ++row;
         }
     }
+    ui->studentsTable->setRowCount(row);
     ui->studentsTable->blockSignals(false);
 
     std::vector<Concerts_entry> list;
     concerts->toVector(list);
+    QString hallFilter = ui->concertHallFilterEdit->text();
+    bool useHall = ui->concertHallFilterCheck->isChecked() && !hallFilter.isEmpty();
+    QDate dFilter = ui->concertDateFilterEdit->date();
+    bool useDate = ui->concertDateFilterCheck->isChecked();
+    concertList.clear();
+    for (const auto& e : list) {
+        QString hall = QString::fromStdString(e.hall);
+        QString date = QString::fromStdString(e.date);
+        if (useHall && !hall.contains(hallFilter, Qt::CaseInsensitive))
+            continue;
+        if (useDate) {
+            QDate dt = QDate::fromString(date, "dd.MM.yyyy");
+            if (!dt.isValid() || dt != dFilter)
+                continue;
+        }
+        concertList.push_back(e);
+    }
     ui->concertsTable->blockSignals(true);
     ui->concertsTable->clear();
     ui->concertsTable->setColumnCount(6);
     QStringList headers;
     headers << "Фамилия" << "Имя" << "Отчество" << "Пьеса" << "Зал" << "Дата";
     ui->concertsTable->setHorizontalHeaderLabels(headers);
-    int count = static_cast<int>(list.size());
+    int count = static_cast<int>(concertList.size());
     ui->concertsTable->setRowCount(count);
     for (int i = 0; i < count; ++i) {
-        const auto& e = list[i];
+        const auto& e = concertList[i];
         auto makeItem = [](const QString& t) {
             QTableWidgetItem* it = new QTableWidgetItem(t);
             it->setTextAlignment(Qt::AlignCenter);
@@ -180,14 +219,12 @@ void MainWindow::removeConcert()
 void MainWindow::editConcert()
 {
     int row = ui->concertsTable->currentRow();
-    std::vector<Concerts_entry> list;
-    concerts->toVector(list);
-    if (row < 0 || row >= static_cast<int>(list.size())) {
+    if (row < 0 || row >= static_cast<int>(concertList.size())) {
         QMessageBox::warning(this, "Редактировать концерт", "Выберите запись в таблице.");
         return;
     }
 
-    Concerts_entry oldEntry = list[row];
+    Concerts_entry oldEntry = concertList[row];
     Concerts_entry newEntry = oldEntry;
     if (!concertDialog(newEntry, &oldEntry))
         return;
@@ -378,12 +415,10 @@ bool MainWindow::concertDialog(Concerts_entry& out, const Concerts_entry* initia
 void MainWindow::updateConcertTree()
 {
     int row = ui->concertsTable->currentRow();
-    std::vector<Concerts_entry> list;
-    concerts->toVector(list);
     FIO* highlight = nullptr;
     FIO temp;
-    if (row >= 0 && row < static_cast<int>(list.size())) {
-        temp = list[row].fio;
+    if (row >= 0 && row < static_cast<int>(concertList.size())) {
+        temp = concertList[row].fio;
         highlight = &temp;
     }
 
@@ -551,12 +586,10 @@ void MainWindow::studentCellChanged(int row, int column)
 
 void MainWindow::concertCellChanged(int row, int column)
 {
-    std::vector<Concerts_entry> list;
-    concerts->toVector(list);
-    if (row < 0 || row >= static_cast<int>(list.size()))
+    if (row < 0 || row >= static_cast<int>(concertList.size()))
         return;
 
-    Concerts_entry oldEntry = list[row];
+    Concerts_entry oldEntry = concertList[row];
     Concerts_entry newEntry = oldEntry;
 
     auto getText = [&](int col, const std::string& oldVal) {
@@ -620,9 +653,7 @@ void MainWindow::studentContextMenu(const QPoint& pos)
 void MainWindow::concertContextMenu(const QPoint& pos)
 {
     int row = ui->concertsTable->rowAt(pos.y());
-    std::vector<Concerts_entry> list;
-    concerts->toVector(list);
-    if (row < 0 || row >= static_cast<int>(list.size()))
+    if (row < 0 || row >= static_cast<int>(concertList.size()))
         return;
     ui->concertsTable->setCurrentCell(row, 0);
     QMenu menu(this);
@@ -632,7 +663,7 @@ void MainWindow::concertContextMenu(const QPoint& pos)
     if (chosen == edit) {
         editConcert();
     } else if (chosen == remove) {
-        concerts->remove(list[row].fio);
+        concerts->remove(concertList[row].fio);
         refreshTables();
     }
 }
