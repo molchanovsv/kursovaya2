@@ -39,16 +39,23 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="removeStudentButton">
-            <property name="text">
-             <string>Remove</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
+          <widget class="QPushButton" name="removeStudentButton">
+           <property name="text">
+            <string>Remove</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="searchStudentButton">
+           <property name="text">
+            <string>Search</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
       <widget class="QWidget" name="concertsTab">
        <attribute name="title">
         <string>Concerts</string>
@@ -74,16 +81,23 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="removeConcertButton">
-            <property name="text">
-             <string>Remove</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
+          <widget class="QPushButton" name="removeConcertButton">
+           <property name="text">
+            <string>Remove</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="searchConcertButton">
+           <property name="text">
+            <string>Search</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
      </widget>
     </item>
    </layout>
