@@ -37,8 +37,7 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree, QWidget* 
     connect(ui->concertsTable, &QTableWidget::customContextMenuRequested, this, &MainWindow::concertContextMenu);
     connect(ui->instrumentFilterEdit, &QLineEdit::textChanged, this, &MainWindow::updateReport);
     connect(ui->hallFilterEdit, &QLineEdit::textChanged, this, &MainWindow::updateReport);
-    connect(ui->dateFromEdit, &QDateEdit::dateChanged, this, &MainWindow::updateReport);
-    connect(ui->dateToEdit, &QDateEdit::dateChanged, this, &MainWindow::updateReport);
+    connect(ui->dateEdit, &QDateEdit::dateChanged, this, &MainWindow::updateReport);
     connect(ui->instrumentFilterCheck, &QCheckBox::toggled, this, &MainWindow::updateReport);
     connect(ui->hallFilterCheck, &QCheckBox::toggled, this, &MainWindow::updateReport);
     connect(ui->dateFilterCheck, &QCheckBox::toggled, this, &MainWindow::updateReport);
@@ -397,8 +396,7 @@ void MainWindow::updateReport()
     bool useInst = ui->instrumentFilterCheck->isChecked() && !instFilter.isEmpty();
     QString hallFilter = ui->hallFilterEdit->text();
     bool useHall = ui->hallFilterCheck->isChecked() && !hallFilter.isEmpty();
-    QDate fromDate = ui->dateFromEdit->date();
-    QDate toDate = ui->dateToEdit->date();
+    QDate selDate = ui->dateEdit->date();
     bool useDate = ui->dateFilterCheck->isChecked();
 
     std::vector<Concerts_entry> concertsList;
@@ -419,7 +417,7 @@ void MainWindow::updateReport()
             continue;
         if (useDate) {
             QDate d = QDate::fromString(date, "dd.MM.yyyy");
-            if (!d.isValid() || d < fromDate || d > toDate)
+            if (!d.isValid() || d != selDate)
                 continue;
         }
 

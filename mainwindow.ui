@@ -161,17 +161,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QDateEdit" name="dateFromEdit">
-            <property name="calendarPopup">
-             <bool>true</bool>
-            </property>
-            <property name="displayFormat">
-             <string>dd.MM.yyyy</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QDateEdit" name="dateToEdit">
+           <widget class="QDateEdit" name="dateEdit">
             <property name="calendarPopup">
              <bool>true</bool>
             </property>
