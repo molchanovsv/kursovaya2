@@ -31,11 +31,26 @@ namespace DataLoader {
         while (count < n && (input >> tmp)) {
             Students_entry record;
             record.fio.surname = decodeCp1251(tmp);
-            if (!(input >> tmp)) break; record.fio.name = decodeCp1251(tmp);
-            if (!(input >> tmp)) break; record.fio.patronymic = decodeCp1251(tmp);
-            if (!(input >> tmp)) break; record.instrument = decodeCp1251(tmp);
-            if (!(input >> tmp)) break; record.teacher.surname = decodeCp1251(tmp);
-            if (!(input >> tmp)) break; record.teacher.initials = decodeCp1251(tmp);
+
+            if (!(input >> tmp))
+                break;
+            record.fio.name = decodeCp1251(tmp);
+
+            if (!(input >> tmp))
+                break;
+            record.fio.patronymic = decodeCp1251(tmp);
+
+            if (!(input >> tmp))
+                break;
+            record.instrument = decodeCp1251(tmp);
+
+            if (!(input >> tmp))
+                break;
+            record.teacher.surname = decodeCp1251(tmp);
+
+            if (!(input >> tmp))
+                break;
+            record.teacher.initials = decodeCp1251(tmp);
 
             records[count++] = record;
         }
@@ -58,24 +73,33 @@ namespace DataLoader {
         std::string line;
 
         while (true) {
-            if (!(file >> line)) break;
+            if (!(file >> line))
+                break;
             entry.fio.surname = decodeCp1251(line);
-            if (!(file >> line)) break;
+
+            if (!(file >> line))
+                break;
             entry.fio.name = decodeCp1251(line);
-            if (!(file >> line)) break;
+
+            if (!(file >> line))
+                break;
             entry.fio.patronymic = decodeCp1251(line);
 
             file >> std::ws;
-            if (!std::getline(file, line, '"')) break; // skip to quote
-            if (!std::getline(file, line, '"')) break; // read quoted text
+            if (!std::getline(file, line, '"'))
+                break; // skip to quote
+            if (!std::getline(file, line, '"'))
+                break; // read quoted text
             entry.play = decodeCp1251(line);
 
             file >> std::ws;
             std::string hallPart1, hallPart2;
-            if (!(file >> hallPart1 >> hallPart2)) break;
+            if (!(file >> hallPart1 >> hallPart2))
+                break;
             entry.hall = decodeCp1251(hallPart1) + " " + decodeCp1251(hallPart2);
 
-            if (!(file >> line)) break;
+            if (!(file >> line))
+                break;
             entry.date = decodeCp1251(line);
 
             entries.push_back(entry);

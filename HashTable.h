@@ -73,7 +73,7 @@ private:
 
 public:
     HashTable(int initSize)
-        : table(nullptr), size(0), fullSize(initSize) {
+        : table(nullptr), fullSize(initSize), size(0) {
         table = new Entry[fullSize];
         for (int i = 0; i < fullSize; i++) {
             table[i].status = 0;
