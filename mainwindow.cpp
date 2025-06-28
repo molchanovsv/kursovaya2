@@ -35,6 +35,12 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree, QWidget* 
     ui->concertsTable->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->studentsTable, &QTableWidget::customContextMenuRequested, this, &MainWindow::studentContextMenu);
     connect(ui->concertsTable, &QTableWidget::customContextMenuRequested, this, &MainWindow::concertContextMenu);
+    connect(ui->instrumentFilterEdit, &QLineEdit::textChanged, this, &MainWindow::updateReport);
+    connect(ui->hallFilterEdit, &QLineEdit::textChanged, this, &MainWindow::updateReport);
+    connect(ui->dateFilterEdit, &QLineEdit::textChanged, this, &MainWindow::updateReport);
+    connect(ui->instrumentFilterCheck, &QCheckBox::toggled, this, &MainWindow::updateReport);
+    connect(ui->hallFilterCheck, &QCheckBox::toggled, this, &MainWindow::updateReport);
+    connect(ui->dateFilterCheck, &QCheckBox::toggled, this, &MainWindow::updateReport);
     ui->concertTree->setHeaderHidden(true);
     ui->reportTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->studentsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -386,22 +392,41 @@ void MainWindow::updateConcertTree()
 
 void MainWindow::updateReport()
 {
+    QString instFilter = ui->instrumentFilterEdit->text();
+    bool useInst = ui->instrumentFilterCheck->isChecked() && !instFilter.isEmpty();
+    QString hallFilter = ui->hallFilterEdit->text();
+    bool useHall = ui->hallFilterCheck->isChecked() && !hallFilter.isEmpty();
+    QString dateFilter = ui->dateFilterEdit->text();
+    bool useDate = ui->dateFilterCheck->isChecked() && !dateFilter.isEmpty();
+
     std::vector<Concerts_entry> concertsList;
     concerts->toVector(concertsList);
     std::vector<std::array<QString,8>> rows;
     for (const auto& c : concertsList) {
         Students_entry st;
-        if (students->find(c.fio, st)) {
-            QString teacher = QString::fromStdString(st.teacher.surname + " " + st.teacher.initials);
-            rows.push_back({QString::fromStdString(c.fio.surname),
-                            QString::fromStdString(c.fio.name),
-                            QString::fromStdString(c.fio.patronymic),
-                            QString::fromStdString(st.instrument),
-                            teacher,
-                            QString::fromStdString(c.play),
-                            QString::fromStdString(c.hall),
-                            QString::fromStdString(c.date)});
-        }
+        if (!students->find(c.fio, st))
+            continue;
+
+        QString inst = QString::fromStdString(st.instrument);
+        QString hall = QString::fromStdString(c.hall);
+        QString date = QString::fromStdString(c.date);
+
+        if (useInst && !inst.contains(instFilter, Qt::CaseInsensitive))
+            continue;
+        if (useHall && !hall.contains(hallFilter, Qt::CaseInsensitive))
+            continue;
+        if (useDate && !date.contains(dateFilter, Qt::CaseInsensitive))
+            continue;
+
+        QString teacher = QString::fromStdString(st.teacher.surname + " " + st.teacher.initials);
+        rows.push_back({QString::fromStdString(c.fio.surname),
+                        QString::fromStdString(c.fio.name),
+                        QString::fromStdString(c.fio.patronymic),
+                        inst,
+                        teacher,
+                        QString::fromStdString(c.play),
+                        hall,
+                        date});
     }
     ui->reportTable->clear();
     ui->reportTable->setColumnCount(8);

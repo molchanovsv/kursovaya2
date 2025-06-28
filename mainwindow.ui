@@ -131,16 +131,50 @@
         <string>Отчёт</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <layout class="QHBoxLayout" name="reportFilterLayout">
           <item>
-           <widget class="QTableWidget" name="reportTable">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
+           <widget class="QCheckBox" name="instrumentFilterCheck">
+            <property name="text">
+             <string>Инструмент</string>
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QLineEdit" name="instrumentFilterEdit"/>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="hallFilterCheck">
+            <property name="text">
+             <string>Зал</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="hallFilterEdit"/>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="dateFilterCheck">
+            <property name="text">
+             <string>Дата</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="dateFilterEdit"/>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QTableWidget" name="reportTable">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </widget>
