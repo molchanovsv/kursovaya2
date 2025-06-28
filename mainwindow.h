@@ -26,6 +26,8 @@ private slots:
     void searchStudent();
     void searchConcert();
     void updateConcertTree();
+    void studentCellChanged(int row, int column);
+    void concertCellChanged(int row, int column);
 
 private:
     Ui::MainWindow *ui;

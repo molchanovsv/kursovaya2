@@ -10,6 +10,7 @@
 #include <QTreeWidget>
 #include <QBrush>
 #include <vector>
+#include <sstream>
 #include "FIO.h"
 
 MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree, QWidget* parent)
@@ -25,6 +26,8 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree, QWidget* 
     connect(ui->searchStudentButton, &QPushButton::clicked, this, &MainWindow::searchStudent);
     connect(ui->searchConcertButton, &QPushButton::clicked, this, &MainWindow::searchConcert);
     connect(ui->concertsTable, &QTableWidget::itemSelectionChanged, this, &MainWindow::updateConcertTree);
+    connect(ui->studentsTable, &QTableWidget::cellChanged, this, &MainWindow::studentCellChanged);
+    connect(ui->concertsTable, &QTableWidget::cellChanged, this, &MainWindow::concertCellChanged);
     refreshTables();
     updateConcertTree();
 }
@@ -33,6 +36,7 @@ MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::refreshTables()
 {
+    ui->studentsTable->blockSignals(true);
     ui->studentsTable->clear();
     ui->studentsTable->setColumnCount(5);
     QStringList studentHeaders;
@@ -49,9 +53,11 @@ void MainWindow::refreshTables()
             ui->studentsTable->setItem(i, 4, new QTableWidgetItem(QString::fromStdString(st.teacher.surname + " " + st.teacher.initials)));
         }
     }
+    ui->studentsTable->blockSignals(false);
 
     std::vector<Concerts_entry> list;
     concerts->toVector(list);
+    ui->concertsTable->blockSignals(true);
     ui->concertsTable->clear();
     ui->concertsTable->setColumnCount(4);
     QStringList headers;
@@ -66,6 +72,7 @@ void MainWindow::refreshTables()
         ui->concertsTable->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(e.hall)));
         ui->concertsTable->setItem(i, 3, new QTableWidgetItem(QString::fromStdString(e.date)));
     }
+    ui->concertsTable->blockSignals(false);
     updateConcertTree();
 }
 
@@ -337,5 +344,76 @@ bool MainWindow::fioDialog(FIO& out, const FIO* initial, const QString& title)
         return true;
     }
     return false;
+}
+
+void MainWindow::studentCellChanged(int row, int column)
+{
+    if (row < 0 || row >= students->getFullSize())
+        return;
+    if (!students->isOccupied(row))
+        return;
+
+    Students_entry oldEntry = students->getEntry(row);
+    Students_entry newEntry = oldEntry;
+
+    auto getText = [&](int col, const std::string& oldVal) {
+        QTableWidgetItem* item = ui->studentsTable->item(row, col);
+        return item ? item->text().toStdString() : oldVal;
+    };
+
+    newEntry.fio.surname = getText(0, oldEntry.fio.surname);
+    newEntry.fio.name = getText(1, oldEntry.fio.name);
+    newEntry.fio.patronymic = getText(2, oldEntry.fio.patronymic);
+    newEntry.instrument = getText(3, oldEntry.instrument);
+    std::string teacher = getText(4, oldEntry.teacher.surname + " " + oldEntry.teacher.initials);
+    size_t sp = teacher.find(' ');
+    if (sp == std::string::npos) {
+        newEntry.teacher.surname = teacher;
+        newEntry.teacher.initials.clear();
+    } else {
+        newEntry.teacher.surname = teacher.substr(0, sp);
+        newEntry.teacher.initials = teacher.substr(sp + 1);
+    }
+
+    if (newEntry.fio == oldEntry.fio && newEntry.instrument == oldEntry.instrument &&
+        newEntry.teacher.surname == oldEntry.teacher.surname && newEntry.teacher.initials == oldEntry.teacher.initials)
+        return;
+
+    students->remove(oldEntry.fio);
+    students->insert(newEntry);
+    refreshTables();
+    ui->studentsTable->setCurrentCell(row, column);
+}
+
+void MainWindow::concertCellChanged(int row, int column)
+{
+    std::vector<Concerts_entry> list;
+    concerts->toVector(list);
+    if (row < 0 || row >= static_cast<int>(list.size()))
+        return;
+
+    Concerts_entry oldEntry = list[row];
+    Concerts_entry newEntry = oldEntry;
+
+    auto getText = [&](int col, const std::string& oldVal) {
+        QTableWidgetItem* item = ui->concertsTable->item(row, col);
+        return item ? item->text().toStdString() : oldVal;
+    };
+
+    std::string fio = getText(0, oldEntry.fio.surname + " " + oldEntry.fio.name + " " + oldEntry.fio.patronymic);
+    std::istringstream ss(fio);
+    ss >> newEntry.fio.surname >> newEntry.fio.name >> newEntry.fio.patronymic;
+    newEntry.play = getText(1, oldEntry.play);
+    newEntry.hall = getText(2, oldEntry.hall);
+    newEntry.date = getText(3, oldEntry.date);
+
+    if (newEntry.fio == oldEntry.fio && newEntry.play == oldEntry.play &&
+        newEntry.hall == oldEntry.hall && newEntry.date == oldEntry.date)
+        return;
+
+    concerts->remove(oldEntry.fio);
+    concerts->insert(newEntry);
+    refreshTables();
+    ui->concertsTable->setCurrentCell(row, column);
 }
 
