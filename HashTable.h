@@ -14,8 +14,8 @@ private:
     };
 
     Entry* table;
-    int size;
     int fullSize;
+    int size;
 
     int calculateKey(const FIO& fio) const {
         std::string fullName = fio.surname + fio.name + fio.patronymic;

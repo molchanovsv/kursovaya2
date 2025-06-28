@@ -84,6 +84,7 @@ int main(int argc, char *argv[])
         return 0;
 
     int count = 0;
+    std::string err;
     DataLoader::validateStudentsFile(studEdit.text().toStdString(), count, err);
     Students_entry* records = DataLoader::loadStudents(count, count, studEdit.text().toStdString());
     auto *table = new HashTable(hashSizeSpin.value());
