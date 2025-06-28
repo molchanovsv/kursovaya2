@@ -1,6 +1,14 @@
 #include "DataLoader.h"
 #include <fstream>
 #include <iostream>
+#include <QTextCodec>
+
+namespace {
+    std::string decodeCp1251(const std::string& str) {
+        static QTextCodec* codec = QTextCodec::codecForName("Windows-1251");
+        return codec->toUnicode(str.c_str()).toStdString();
+    }
+}
 
 namespace DataLoader {
     Students_entry* loadStudents(int n, int& count) {
@@ -11,16 +19,17 @@ namespace DataLoader {
         std::string line;
         while (!input.eof() && count < n) {
             Students_entry record;
+            std::string tmp;
 
-            input >> record.fio.surname >> record.fio.name >> record.fio.patronymic;
+            input >> tmp; record.fio.surname = decodeCp1251(tmp);
+            input >> tmp; record.fio.name = decodeCp1251(tmp);
+            input >> tmp; record.fio.patronymic = decodeCp1251(tmp);
             if (input.eof()) break;
 
-            input >> record.instrument;
+            input >> tmp; record.instrument = decodeCp1251(tmp);
 
-            input >> record.teacher.surname;
-            std::string initials;
-            input >> initials;
-            record.teacher.initials = initials;
+            input >> tmp; record.teacher.surname = decodeCp1251(tmp);
+            input >> tmp; record.teacher.initials = decodeCp1251(tmp);
 
             records[count++] = record;
         }
@@ -33,27 +42,32 @@ namespace DataLoader {
         std::ifstream file(filename);
 
         if (!file.is_open()) {
-            std::cerr << "Íå óäàëîñü îòêðûòü ôàéë " << filename << std::endl;
+            std::cerr << "ÐÐµ ÑƒÐ´Ð°Ð»Ð¾ÑÑŒ Ð¾Ñ‚ÐºÑ€Ñ‹Ñ‚ÑŒ Ñ„Ð°Ð¹Ð» " << filename << std::endl;
             return entries;
         }
 
         Concerts_entry entry;
         std::string line;
 
-        while (file >> entry.fio.surname >> entry.fio.name >> entry.fio.patronymic) {
-            // ×òåíèå ïüåñû (â êàâû÷êàõ)
-            file >> std::ws; // Ïðîïóñòèòü ïðîáåëû
-            std::getline(file, entry.play, '"'); // Ïðîïóñòèòü âñ¸ äî ïåðâîé êàâû÷êè
-            std::getline(file, entry.play, '"'); // Ïðî÷èòàòü ïüåñó äî çàêðûâàþùåé êàâû÷êè
+        while (file >> line) {
+            entry.fio.surname = decodeCp1251(line);
+            if (!(file >> line)) break; entry.fio.name = decodeCp1251(line);
+            if (!(file >> line)) break; entry.fio.patronymic = decodeCp1251(line);
+            // Ð§Ñ‚ÐµÐ½Ð¸Ðµ Ð¿ÑŒÐµÑÑ‹ (Ð² ÐºÐ°Ð²Ñ‹Ñ‡ÐºÐ°Ñ…)
+            file >> std::ws; // ÐŸÑ€Ð¾Ð¿ÑƒÑÑ‚Ð¸Ñ‚ÑŒ Ð¿Ñ€Ð¾Ð±ÐµÐ»Ñ‹
+            std::getline(file, line, '"'); // ÐŸÑ€Ð¾Ð¿ÑƒÑÑ‚Ð¸Ñ‚ÑŒ Ð²ÑÑ‘ Ð´Ð¾ Ð¿ÐµÑ€Ð²Ð¾Ð¹ ÐºÐ°Ð²Ñ‹Ñ‡ÐºÐ¸
+            std::getline(file, line, '"'); // ÐŸÑ€Ð¾Ñ‡Ð¸Ñ‚Ð°Ñ‚ÑŒ Ð¿ÑŒÐµÑÑƒ Ð´Ð¾ Ð·Ð°ÐºÑ€Ñ‹Ð²Ð°ÑŽÑ‰ÐµÐ¹ ÐºÐ°Ð²Ñ‹Ñ‡ÐºÐ¸
+            entry.play = decodeCp1251(line);
 
-            // ×òåíèå çàëà (2 ñëîâà)
+            // Ð§Ñ‚ÐµÐ½Ð¸Ðµ Ð·Ð°Ð»Ð° (2 ÑÐ»Ð¾Ð²Ð°)
             file >> std::ws;
             std::string hallPart1, hallPart2;
             file >> hallPart1 >> hallPart2;
-            entry.hall = hallPart1 + " " + hallPart2;
+            entry.hall = decodeCp1251(hallPart1) + " " + decodeCp1251(hallPart2);
 
-            // ×òåíèå äàòû
-            file >> entry.date;
+            // Ð§Ñ‚ÐµÐ½Ð¸Ðµ Ð´Ð°Ñ‚Ñ‹
+            file >> line;
+            entry.date = decodeCp1251(line);
 
             entries.push_back(entry);
         }
