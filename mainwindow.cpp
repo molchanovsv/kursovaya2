@@ -34,6 +34,10 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree, QWidget* 
     ui->concertsTable->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->studentsTable, &QTableWidget::customContextMenuRequested, this, &MainWindow::studentContextMenu);
     connect(ui->concertsTable, &QTableWidget::customContextMenuRequested, this, &MainWindow::concertContextMenu);
+    ui->mainSplitter->setStretchFactor(0, 1);
+    ui->mainSplitter->setStretchFactor(1, 1);
+    ui->concertsSplitter->setStretchFactor(0, 1);
+    ui->concertsSplitter->setStretchFactor(1, 1);
     refreshTables();
     updateConcertTree();
 }
@@ -48,19 +52,21 @@ void MainWindow::refreshTables()
     QStringList studentHeaders;
     studentHeaders << "Surname" << "Name" << "Patronymic" << "Instrument" << "Teacher";
     ui->studentsTable->setHorizontalHeaderLabels(studentHeaders);
-    ui->studentsTable->setRowCount(students->getFullSize());
+    studentRowMap.clear();
+    int total = students->getSize();
+    ui->studentsTable->setRowCount(total);
+    int row = 0;
     for (int i = 0; i < students->getFullSize(); ++i) {
         if (students->isOccupied(i)) {
             const auto& st = students->getEntry(i);
-            ui->studentsTable->setItem(i, 0, new QTableWidgetItem(QString::fromStdString(st.fio.surname)));
-            ui->studentsTable->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(st.fio.name)));
-            ui->studentsTable->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(st.fio.patronymic)));
-            ui->studentsTable->setItem(i, 3, new QTableWidgetItem(QString::fromStdString(st.instrument)));
-            ui->studentsTable->setItem(
-                i,
-                4,
-                new QTableWidgetItem(QString::fromStdString(st.teacher.surname + " " +
-                                                st.teacher.initials)));
+            ui->studentsTable->setVerticalHeaderItem(row, new QTableWidgetItem(QString::number(i)));
+            ui->studentsTable->setItem(row, 0, new QTableWidgetItem(QString::fromStdString(st.fio.surname)));
+            ui->studentsTable->setItem(row, 1, new QTableWidgetItem(QString::fromStdString(st.fio.name)));
+            ui->studentsTable->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(st.fio.patronymic)));
+            ui->studentsTable->setItem(row, 3, new QTableWidgetItem(QString::fromStdString(st.instrument)));
+            ui->studentsTable->setItem(row, 4, new QTableWidgetItem(QString::fromStdString(st.teacher.surname + " " + st.teacher.initials)));
+            studentRowMap.push_back(i);
+            ++row;
         }
     }
     ui->studentsTable->blockSignals(false);
@@ -109,12 +115,13 @@ void MainWindow::removeStudent()
 void MainWindow::editStudent()
 {
     int row = ui->studentsTable->currentRow();
-    if (row < 0 || !ui->studentsTable->item(row, 0)) {
+    if (row < 0 || row >= static_cast<int>(studentRowMap.size())) {
         QMessageBox::warning(this, "Edit Student", "Select a student in the table.");
         return;
     }
 
-    Students_entry oldEntry = students->getEntry(row);
+    int index = studentRowMap[row];
+    Students_entry oldEntry = students->getEntry(index);
     Students_entry newEntry = oldEntry;
     if (!studentDialog(newEntry, &oldEntry))
         return;
@@ -402,12 +409,12 @@ bool MainWindow::fioDialog(FIO& out, const FIO* initial, const QString& title)
 
 void MainWindow::studentCellChanged(int row, int column)
 {
-    if (row < 0 || row >= students->getFullSize())
+    if (row < 0 || row >= static_cast<int>(studentRowMap.size()))
         return;
-    if (!students->isOccupied(row))
+    int index = studentRowMap[row];
+    if (!students->isOccupied(index))
         return;
-
-    Students_entry oldEntry = students->getEntry(row);
+    Students_entry oldEntry = students->getEntry(index);
     Students_entry newEntry = oldEntry;
 
     auto getText = [&](int col, const std::string& oldVal) {
@@ -509,7 +516,7 @@ void MainWindow::concertCellChanged(int row, int column)
 void MainWindow::studentContextMenu(const QPoint& pos)
 {
     int row = ui->studentsTable->rowAt(pos.y());
-    if (row < 0 || !ui->studentsTable->item(row, 0))
+    if (row < 0 || row >= static_cast<int>(studentRowMap.size()))
         return;
     ui->studentsTable->setCurrentCell(row, 0);
     QMenu menu(this);
@@ -519,7 +526,7 @@ void MainWindow::studentContextMenu(const QPoint& pos)
     if (chosen == edit) {
         editStudent();
     } else if (chosen == remove) {
-        Students_entry entry = students->getEntry(row);
+        Students_entry entry = students->getEntry(studentRowMap[row]);
         students->remove(entry.fio);
         refreshTables();
     }
