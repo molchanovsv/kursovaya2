@@ -16,7 +16,8 @@ namespace {
 }
 
 namespace DataLoader {
-    Students_entry* loadStudents(int n, int& count, const std::string& filename) {
+    Students_entry* loadStudents(int n, int& count) {
+        const std::string filename = "students.txt";
         qDebug() << "Loading students from" << QString::fromStdString(filename);
         std::ifstream input(filename);
         if (!input.is_open()) {
