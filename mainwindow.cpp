@@ -37,7 +37,8 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree, QWidget* 
     connect(ui->concertsTable, &QTableWidget::customContextMenuRequested, this, &MainWindow::concertContextMenu);
     connect(ui->instrumentFilterEdit, &QLineEdit::textChanged, this, &MainWindow::updateReport);
     connect(ui->hallFilterEdit, &QLineEdit::textChanged, this, &MainWindow::updateReport);
-    connect(ui->dateFilterEdit, &QLineEdit::textChanged, this, &MainWindow::updateReport);
+    connect(ui->dateFromEdit, &QDateEdit::dateChanged, this, &MainWindow::updateReport);
+    connect(ui->dateToEdit, &QDateEdit::dateChanged, this, &MainWindow::updateReport);
     connect(ui->instrumentFilterCheck, &QCheckBox::toggled, this, &MainWindow::updateReport);
     connect(ui->hallFilterCheck, &QCheckBox::toggled, this, &MainWindow::updateReport);
     connect(ui->dateFilterCheck, &QCheckBox::toggled, this, &MainWindow::updateReport);
@@ -396,8 +397,9 @@ void MainWindow::updateReport()
     bool useInst = ui->instrumentFilterCheck->isChecked() && !instFilter.isEmpty();
     QString hallFilter = ui->hallFilterEdit->text();
     bool useHall = ui->hallFilterCheck->isChecked() && !hallFilter.isEmpty();
-    QString dateFilter = ui->dateFilterEdit->text();
-    bool useDate = ui->dateFilterCheck->isChecked() && !dateFilter.isEmpty();
+    QDate fromDate = ui->dateFromEdit->date();
+    QDate toDate = ui->dateToEdit->date();
+    bool useDate = ui->dateFilterCheck->isChecked();
 
     std::vector<Concerts_entry> concertsList;
     concerts->toVector(concertsList);
@@ -415,8 +417,11 @@ void MainWindow::updateReport()
             continue;
         if (useHall && !hall.contains(hallFilter, Qt::CaseInsensitive))
             continue;
-        if (useDate && !date.contains(dateFilter, Qt::CaseInsensitive))
-            continue;
+        if (useDate) {
+            QDate d = QDate::fromString(date, "dd.MM.yyyy");
+            if (!d.isValid() || d < fromDate || d > toDate)
+                continue;
+        }
 
         QString teacher = QString::fromStdString(st.teacher.surname + " " + st.teacher.initials);
         rows.push_back({QString::fromStdString(c.fio.surname),
