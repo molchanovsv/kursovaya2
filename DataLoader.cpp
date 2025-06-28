@@ -6,6 +6,10 @@
 namespace {
     std::string decodeCp1251(const std::string& str) {
         static QTextCodec* codec = QTextCodec::codecForName("Windows-1251");
+        if (!codec) {
+            // Fallback: return the string unchanged to avoid crashes
+            return str;
+        }
         return codec->toUnicode(str.c_str()).toStdString();
     }
 }
