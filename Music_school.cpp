@@ -9,7 +9,7 @@ int main() {
     setlocale(LC_ALL, "Russian");
 
     int recordsCount;
-    Students_entry* records = DataLoader::loadStudents(20, recordsCount);
+    Students_entry* records = DataLoader::loadStudents(20, recordsCount, "students.txt");
 
     HashTable hashTable(5);
     for (int i = 0; i < recordsCount; i++) {

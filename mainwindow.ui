@@ -11,100 +11,241 @@
    </rect>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QVBoxLayout" name="mainLayout">
     <item>
      <widget class="QTabWidget" name="tabWidget">
-      <widget class="QWidget" name="studentsTab">
+      <widget class="QWidget" name="mainTab">
        <attribute name="title">
-        <string>Students</string>
+        <string>Главная</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
+       <layout class="QVBoxLayout" name="tabMainLayout">
         <item>
-         <widget class="QTableWidget" name="studentsTable"/>
-        </item>
+         <widget class="QSplitter" name="mainSplitter">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <widget class="QWidget" name="studentsPanel">
+           <layout class="QVBoxLayout" name="verticalLayout">
+              <item>
+               <widget class="QTableWidget" name="studentsTable">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+               </widget>
+              </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
            <widget class="QPushButton" name="addStudentButton">
             <property name="text">
-             <string>Add</string>
+             <string>Добавить</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="editStudentButton">
             <property name="text">
-             <string>Edit</string>
+             <string>Редактировать</string>
             </property>
            </widget>
           </item>
           <item>
-          <widget class="QPushButton" name="removeStudentButton">
+           <widget class="QPushButton" name="removeStudentButton">
+            <property name="text">
+             <string>Удалить</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="searchStudentButton">
+            <property name="text">
+             <string>Поиск</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+          <widget class="QPushButton" name="clearStudentSearchButton">
            <property name="text">
-            <string>Remove</string>
+            <string>Очистить поиск</string>
+           </property>
+           <property name="visible">
+            <bool>false</bool>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="searchStudentButton">
+          <widget class="QPushButton" name="saveStudentsButton">
            <property name="text">
-            <string>Search</string>
+            <string>Выгрузить изменения</string>
            </property>
           </widget>
          </item>
         </layout>
        </item>
-      </layout>
-     </widget>
-      <widget class="QWidget" name="concertsTab">
-       <attribute name="title">
-        <string>Concerts</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
-        <item>
-         <widget class="QTableWidget" name="concertsTable"/>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
-          <item>
-           <widget class="QPushButton" name="addConcertButton">
+       </layout>
+      </widget>
+          <widget class="QWidget" name="concertsPanel">
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <item>
+              <widget class="QSplitter" name="concertsSplitter">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <widget class="QTableWidget" name="concertsTable">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+               </widget>
+               <widget class="QTreeWidget" name="concertTree"/>
+              </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <item>
+               <widget class="QPushButton" name="addConcertButton">
             <property name="text">
-             <string>Add</string>
+             <string>Добавить</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="editConcertButton">
             <property name="text">
-             <string>Edit</string>
+             <string>Редактировать</string>
             </property>
            </widget>
           </item>
           <item>
-          <widget class="QPushButton" name="removeConcertButton">
+           <widget class="QPushButton" name="removeConcertButton">
+            <property name="text">
+             <string>Удалить</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="searchConcertButton">
+            <property name="text">
+             <string>Поиск</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+          <widget class="QPushButton" name="clearConcertSearchButton">
            <property name="text">
-            <string>Remove</string>
+            <string>Очистить поиск</string>
+           </property>
+           <property name="visible">
+            <bool>false</bool>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="searchConcertButton">
+          <widget class="QPushButton" name="saveConcertsButton">
            <property name="text">
-            <string>Search</string>
+            <string>Выгрузить изменения</string>
+           </property>
+          </widget>
+         </item>
+         </layout>
+        </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="reportTab">
+       <attribute name="title">
+        <string>Отчёт</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <layout class="QHBoxLayout" name="reportFilterLayout">
+          <item>
+           <widget class="QCheckBox" name="instrumentFilterCheck">
+            <property name="text">
+             <string>Инструмент</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="instrumentFilterEdit"/>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="hallFilterCheck">
+            <property name="text">
+             <string>Зал</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="hallFilterEdit"/>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="dateFilterCheck">
+            <property name="text">
+             <string>Дата</string>
+            </property>
+           </widget>
+          </item>
+         <item>
+          <widget class="QDateEdit" name="dateEdit">
+           <property name="calendarPopup">
+            <bool>true</bool>
+           </property>
+           <property name="displayFormat">
+            <string>dd.MM.yyyy</string>
            </property>
           </widget>
          </item>
         </layout>
        </item>
-      </layout>
-     </widget>
+       <item>
+        <widget class="QPushButton" name="saveReportButton">
+         <property name="text">
+          <string>Выгрузить изменения</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTableWidget" name="reportTable">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar"/>
-  <widget class="QStatusBar" name="statusbar"/>
- </widget>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="sizeGripEnabled">
+    <bool>true</bool>
+   </property>
+   <widget class="QLabel" name="hashStepsLabel">
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="treeStepsLabel">
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+  </widget>
+</widget>
  <resources/>
  <connections/>
 </ui>
