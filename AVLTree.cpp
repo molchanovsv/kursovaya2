@@ -1,6 +1,7 @@
 #include "AVLTree.h"
 #include <algorithm>
 #include <iostream>
+#include <vector>
 
 AVLTree::Node::Node(const Concerts_entry& entry)
     : data(entry), left(nullptr), right(nullptr), height(1) {
@@ -136,6 +137,46 @@ void AVLTree::print(Node* node, std::ostream& os, int level) const {
 }
 
 void AVLTree::print(std::ostream& os) const {
-	print(root, os);
-	os << std::endl;
+        print(root, os);
+        os << std::endl;
 }
+
+void AVLTree::toVector(Node* node, std::vector<Concerts_entry>& vec) const {
+    if (!node) return;
+    toVector(node->left, vec);
+    vec.push_back(node->data);
+    toVector(node->right, vec);
+}
+
+void AVLTree::toVector(std::vector<Concerts_entry>& vec) const {
+    toVector(root, vec);
+}
+
+void AVLTree::searchHall(Node* node, const std::string& hall, std::vector<Concerts_entry>& vec) const {
+    if (!node) return;
+    searchHall(node->left, hall, vec);
+    if (node->data.hall == hall)
+        vec.push_back(node->data);
+    searchHall(node->right, hall, vec);
+}
+
+std::vector<Concerts_entry> AVLTree::searchByHall(const std::string& hall) const {
+    std::vector<Concerts_entry> res;
+    searchHall(root, hall, res);
+    return res;
+}
+
+void AVLTree::searchDate(Node* node, const std::string& date, std::vector<Concerts_entry>& vec) const {
+    if (!node) return;
+    searchDate(node->left, date, vec);
+    if (node->data.date == date)
+        vec.push_back(node->data);
+    searchDate(node->right, date, vec);
+}
+
+std::vector<Concerts_entry> AVLTree::searchByDate(const std::string& date) const {
+    std::vector<Concerts_entry> res;
+    searchDate(root, date, res);
+    return res;
+}
+
