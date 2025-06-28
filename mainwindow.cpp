@@ -51,7 +51,11 @@ void MainWindow::refreshTables()
             ui->studentsTable->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(st.fio.name)));
             ui->studentsTable->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(st.fio.patronymic)));
             ui->studentsTable->setItem(i, 3, new QTableWidgetItem(QString::fromStdString(st.instrument)));
-            ui->studentsTable->setItem(i, 4, new QTableWidgetItem(QString::fromStdString(st.teacher.surname + " " + st.teacher.initials));
+            ui->studentsTable->setItem(
+                i,
+                4,
+                new QTableWidgetItem(QString::fromStdString(st.teacher.surname + " " +
+                                                st.teacher.initials)));
         }
     }
     ui->studentsTable->blockSignals(false);
@@ -417,7 +421,7 @@ void MainWindow::studentCellChanged(int row, int column)
                      QString::fromStdString(newEntry.fio.patronymic)) ||
         !validateInstrument(QString::fromStdString(newEntry.instrument)) ||
         !validateTeacher(QString::fromStdString(newEntry.teacher.surname),
-                         QString::fromStdString(newEntry.teacher.initials)) {
+                         QString::fromStdString(newEntry.teacher.initials))) {
         QMessageBox::warning(this, "Input Error", "Invalid student data");
         refreshTables();
         return;
@@ -487,7 +491,7 @@ bool MainWindow::validateInstrument(const QString& instrument) const
 bool MainWindow::validateTeacher(const QString& surname, const QString& initials) const
 {
     QRegularExpression sPat("^[А-ЯЁ][а-яё]+$");
-    QRegularExpression iPat("^[А-ЯЁ]\.[А-ЯЁ]\.$");
+    QRegularExpression iPat("^[А-ЯЁ]\\.[А-ЯЁ]\\.$");
     return sPat.match(surname).hasMatch() && iPat.match(initials).hasMatch();
 }
 
