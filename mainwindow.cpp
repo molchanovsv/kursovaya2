@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QInputDialog>
+#include <QMessageBox>
 
 MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree, QWidget* parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), students(studentsTable), concerts(concertTree)
@@ -12,6 +13,8 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree, QWidget* 
     connect(ui->addConcertButton, &QPushButton::clicked, this, &MainWindow::addConcert);
     connect(ui->removeConcertButton, &QPushButton::clicked, this, &MainWindow::removeConcert);
     connect(ui->editConcertButton, &QPushButton::clicked, this, &MainWindow::editConcert);
+    connect(ui->searchStudentButton, &QPushButton::clicked, this, &MainWindow::searchStudent);
+    connect(ui->searchConcertButton, &QPushButton::clicked, this, &MainWindow::searchConcert);
     refreshTables();
 }
 
@@ -119,5 +122,57 @@ void MainWindow::editConcert()
     e.date = QInputDialog::getText(this, "Date", "Date").toStdString();
     concerts->insert(e);
     refreshTables();
+}
+
+void MainWindow::searchStudent()
+{
+    QStringList types;
+    types << "Name" << "Instrument";
+    bool ok = false;
+    QString type = QInputDialog::getItem(this, "Search Student", "Search by:", types, 0, false, &ok);
+    if (!ok || type.isEmpty())
+        return;
+    QString query = QInputDialog::getText(this, "Search Student", "Value:", QLineEdit::Normal, QString(), &ok);
+    if (!ok)
+        return;
+    std::vector<Students_entry> results;
+    if (type == "Name")
+        results = students->searchByName(query.toStdString());
+    else
+        results = students->searchByInstrument(query.toStdString());
+
+    QString text;
+    for (const auto& st : results)
+        text += QString::fromStdString(st.fio.surname + " " + st.fio.name + " " + st.fio.patronymic +
+                                       " - " + st.instrument + " (" + st.teacher.surname + " " + st.teacher.initials + ")\n");
+    if (text.isEmpty())
+        text = "Not found";
+    QMessageBox::information(this, "Results", text);
+}
+
+void MainWindow::searchConcert()
+{
+    QStringList types;
+    types << "Date" << "Hall";
+    bool ok = false;
+    QString type = QInputDialog::getItem(this, "Search Concert", "Search by:", types, 0, false, &ok);
+    if (!ok || type.isEmpty())
+        return;
+    QString query = QInputDialog::getText(this, "Search Concert", "Value:", QLineEdit::Normal, QString(), &ok);
+    if (!ok)
+        return;
+    std::vector<Concerts_entry> results;
+    if (type == "Date")
+        results = concerts->searchByDate(query.toStdString());
+    else
+        results = concerts->searchByHall(query.toStdString());
+
+    QString text;
+    for (const auto& e : results)
+        text += QString::fromStdString(e.fio.surname + " " + e.fio.name + " " + e.fio.patronymic +
+                                       " - " + e.play + " - " + e.hall + " - " + e.date + "\n");
+    if (text.isEmpty())
+        text = "Not found";
+    QMessageBox::information(this, "Results", text);
 }
 
