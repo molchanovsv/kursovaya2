@@ -176,10 +176,17 @@ public:
 
     // additional search helpers for GUI
     bool find(const FIO& fio, Students_entry& res) const {
+        int dummy;
+        return find(fio, res, dummy);
+    }
+
+    bool find(const FIO& fio, Students_entry& res, int& steps) const {
         int key = calculateKey(fio);
         int j = 0;
         int index;
+        steps = 0;
         do {
+            steps++;
             index = hash(key, j, fullSize);
             if (table[index].status == 0) {
                 return false;

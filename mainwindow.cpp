@@ -294,6 +294,17 @@ void MainWindow::searchStudent()
         sPatronymic = pat.text();
         sInstr = instr.text();
         sTeacher = teacher.text();
+        if (!sSurname.isEmpty() && !sName.isEmpty() && !sPatronymic.isEmpty()) {
+            FIO f{ sSurname.toStdString(), sName.toStdString(), sPatronymic.toStdString() };
+            Students_entry tmp;
+            int steps = 0;
+            bool found = students->find(f, tmp, steps);
+            ui->hashStepsLabel->setText(found
+                ? QString("Хэш поиск: %1 шагов").arg(steps)
+                : QString("Хэш поиск: не найдено (%1 шагов)").arg(steps));
+        } else {
+            ui->hashStepsLabel->clear();
+        }
         studentFilterActive = !(sSurname.isEmpty() && sName.isEmpty() &&
                                sPatronymic.isEmpty() && sInstr.isEmpty() &&
                                sTeacher.isEmpty());
@@ -355,6 +366,17 @@ void MainWindow::searchConcert()
         cHall = hall.text();
         cDate = date.date().isValid() ? date.date().toString("dd.MM.yyyy") : QString();
         cDateEnabled = dateCheck.isChecked();
+        if (!cSurname.isEmpty() && !cName.isEmpty() && !cPatronymic.isEmpty()) {
+            FIO f{ cSurname.toStdString(), cName.toStdString(), cPatronymic.toStdString() };
+            Concerts_entry tmp;
+            int steps = 0;
+            bool found = concerts->find(f, tmp, steps);
+            ui->treeStepsLabel->setText(found
+                ? QString("Дерево поиск: %1 шагов").arg(steps)
+                : QString("Дерево поиск: не найдено (%1 шагов)").arg(steps));
+        } else {
+            ui->treeStepsLabel->clear();
+        }
         concertFilterActive = !(cSurname.isEmpty() && cName.isEmpty() && cPatronymic.isEmpty() &&
                                cPlay.isEmpty() && cHall.isEmpty() && !(cDateEnabled && !cDate.isEmpty()));
         ui->clearConcertSearchButton->setVisible(concertFilterActive);
@@ -371,6 +393,7 @@ void MainWindow::clearStudentSearch()
     sTeacher.clear();
     studentFilterActive = false;
     ui->clearStudentSearchButton->setVisible(false);
+    ui->hashStepsLabel->clear();
     refreshTables();
 }
 
@@ -385,6 +408,7 @@ void MainWindow::clearConcertSearch()
     cDateEnabled = false;
     concertFilterActive = false;
     ui->clearConcertSearchButton->setVisible(false);
+    ui->treeStepsLabel->clear();
     refreshTables();
 }
 

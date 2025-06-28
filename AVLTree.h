@@ -50,6 +50,7 @@ public:
     std::vector<Concerts_entry> searchByDate(const std::string& date) const;
     void buildTreeWidget(QTreeWidget* widget,
                          const Concerts_entry* highlight = nullptr) const;
+    bool find(const FIO& fio, Concerts_entry& res, int& steps) const;
 };
 
 #endif

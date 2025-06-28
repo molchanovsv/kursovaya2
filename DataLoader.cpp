@@ -143,7 +143,7 @@ namespace DataLoader {
         return entries;
     }
 
-    bool validateStudentsFile(const std::string& filename, std::string& error) {
+    bool validateStudentsFile(const std::string& filename, int& count, std::string& error) {
         std::ifstream in(filename);
         if (!in.is_open()) {
             error = "Не удалось открыть файл студентов";
@@ -151,7 +151,7 @@ namespace DataLoader {
         }
 
         std::string tmp;
-        int count = 0;
+        count = 0;
         while (in >> tmp) {
             Students_entry rec;
             rec.fio.surname = decodeCp1251(tmp);

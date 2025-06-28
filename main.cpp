@@ -7,6 +7,7 @@
 #include <QFileDialog>
 #include <QDialogButtonBox>
 #include <QLabel>
+#include <QSpinBox>
 #include "mainwindow.h"
 #include "DataLoader.h"
 
@@ -18,6 +19,8 @@ int main(int argc, char *argv[])
     fileDialog.setWindowTitle("Выбор файлов");
     QFormLayout layout(&fileDialog);
     QLineEdit studEdit, concEdit;
+    QSpinBox hashSizeSpin;
+    hashSizeSpin.setMinimum(1);
     QPushButton browseStud("...");
     QPushButton browseConc("...");
     QWidget studRow, concRow;
@@ -30,6 +33,7 @@ int main(int argc, char *argv[])
     concRow.setLayout(&concLay);
     layout.addRow("Студенты", &studRow);
     layout.addRow("Концерты", &concRow);
+    layout.addRow("Размер хэш-таблицы", &hashSizeSpin);
     QLabel errorLabel;
     errorLabel.setStyleSheet("color:red");
     layout.addRow(&errorLabel);
@@ -48,10 +52,11 @@ int main(int argc, char *argv[])
         QString msg;
         bool ok = true;
         std::string err;
+        int studCount = 0;
         if (studEdit.text().isEmpty()) {
             msg = "Укажите файл студентов";
             ok = false;
-        } else if (!DataLoader::validateStudentsFile(studEdit.text().toStdString(), err)) {
+        } else if (!DataLoader::validateStudentsFile(studEdit.text().toStdString(), studCount, err)) {
             msg = QString::fromStdString(err);
             ok = false;
         } else if (concEdit.text().isEmpty()) {
@@ -60,7 +65,12 @@ int main(int argc, char *argv[])
         } else if (!DataLoader::validateConcertsFile(concEdit.text().toStdString(), err)) {
             msg = QString::fromStdString(err);
             ok = false;
+        } else if (hashSizeSpin.value() < studCount) {
+            msg = "Размер хэш-таблицы меньше количества записей";
+            ok = false;
         }
+        if (studCount > 0)
+            hashSizeSpin.setMinimum(studCount);
         buttons.button(QDialogButtonBox::Ok)->setEnabled(ok);
         errorLabel.setText(msg);
     };
@@ -74,8 +84,9 @@ int main(int argc, char *argv[])
         return 0;
 
     int count = 0;
-    Students_entry* records = DataLoader::loadStudents(20, count, studEdit.text().toStdString());
-    auto *table = new HashTable(5);
+    DataLoader::validateStudentsFile(studEdit.text().toStdString(), count, err);
+    Students_entry* records = DataLoader::loadStudents(count, count, studEdit.text().toStdString());
+    auto *table = new HashTable(hashSizeSpin.value());
     for(int i=0;i<count;++i)
         table->insert(records[i]);
 

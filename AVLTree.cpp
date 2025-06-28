@@ -220,3 +220,22 @@ void AVLTree::buildTreeWidget(QTreeWidget* widget,
     widget->expandAll();
 }
 
+bool AVLTree::find(const FIO& fio, Concerts_entry& res, int& steps) const {
+    Node* node = root;
+    std::string target = fio.surname + fio.name + fio.patronymic;
+    steps = 0;
+    while (node) {
+        ++steps;
+        std::string cur = node->data.fio.surname + node->data.fio.name + node->data.fio.patronymic;
+        if (target == cur) {
+            res = node->data;
+            return true;
+        }
+        if (target < cur)
+            node = node->left;
+        else
+            node = node->right;
+    }
+    return false;
+}
+

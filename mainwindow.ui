@@ -230,8 +230,22 @@
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar"/>
-  <widget class="QStatusBar" name="statusbar"/>
- </widget>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="sizeGripEnabled">
+    <bool>true</bool>
+   </property>
+   <widget class="QLabel" name="hashStepsLabel">
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="treeStepsLabel">
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+  </widget>
+</widget>
  <resources/>
  <connections/>
 </ui>
