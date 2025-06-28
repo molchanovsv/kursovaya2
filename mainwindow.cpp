@@ -14,7 +14,6 @@
 #include <QDate>
 #include <vector>
 #include <array>
-#include <sstream>
 #include "FIO.h"
 
 MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree, QWidget* parent)
@@ -27,8 +26,9 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree, QWidget* 
     connect(ui->addConcertButton, &QPushButton::clicked, this, &MainWindow::addConcert);
     connect(ui->removeConcertButton, &QPushButton::clicked, this, &MainWindow::removeConcert);
     connect(ui->editConcertButton, &QPushButton::clicked, this, &MainWindow::editConcert);
-    connect(ui->searchStudentButton, &QPushButton::clicked, this, &MainWindow::searchStudent);
     connect(ui->searchConcertButton, &QPushButton::clicked, this, &MainWindow::searchConcert);
+    connect(ui->studentSearchEdit, &QLineEdit::textChanged, this, &MainWindow::refreshTables);
+    connect(ui->concertSearchEdit, &QLineEdit::textChanged, this, &MainWindow::refreshTables);
     connect(ui->concertsTable, &QTableWidget::itemSelectionChanged, this, &MainWindow::updateConcertTree);
     connect(ui->studentsTable, &QTableWidget::cellChanged, this, &MainWindow::studentCellChanged);
     connect(ui->concertsTable, &QTableWidget::cellChanged, this, &MainWindow::concertCellChanged);
@@ -77,6 +77,8 @@ void MainWindow::refreshTables()
     bool useName = ui->nameFilterCheck->isChecked() && !nameFilter.isEmpty();
     QString instrFilter = ui->instrFilterEdit->text();
     bool useInstr = ui->instrFilterCheck->isChecked() && !instrFilter.isEmpty();
+    QString anyFilter = ui->studentSearchEdit->text();
+    bool useAny = !anyFilter.isEmpty();
     studentRowMap.clear();
     int row = 0;
     for (int i = 0; i < students->getFullSize(); ++i) {
@@ -86,11 +88,20 @@ void MainWindow::refreshTables()
             QString nam = QString::fromStdString(st.fio.name);
             QString pat = QString::fromStdString(st.fio.patronymic);
             QString instr = QString::fromStdString(st.instrument);
+            QString teacher =
+                QString::fromStdString(st.teacher.surname + " " + st.teacher.initials);
             if (useName && !sur.contains(nameFilter, Qt::CaseInsensitive) &&
                 !nam.contains(nameFilter, Qt::CaseInsensitive) &&
                 !pat.contains(nameFilter, Qt::CaseInsensitive))
                 continue;
             if (useInstr && !instr.contains(instrFilter, Qt::CaseInsensitive))
+                continue;
+            if (useAny && !(
+                    sur.contains(anyFilter, Qt::CaseInsensitive) ||
+                    nam.contains(anyFilter, Qt::CaseInsensitive) ||
+                    pat.contains(anyFilter, Qt::CaseInsensitive) ||
+                    instr.contains(anyFilter, Qt::CaseInsensitive) ||
+                    teacher.contains(anyFilter, Qt::CaseInsensitive)))
                 continue;
             QTableWidgetItem* vh = new QTableWidgetItem(QString::number(i));
             vh->setTextAlignment(Qt::AlignCenter);
@@ -120,8 +131,14 @@ void MainWindow::refreshTables()
     bool useHall = ui->concertHallFilterCheck->isChecked() && !hallFilter.isEmpty();
     QDate dFilter = ui->concertDateFilterEdit->date();
     bool useDate = ui->concertDateFilterCheck->isChecked();
+    QString anyCFilter = ui->concertSearchEdit->text();
+    bool useAnyC = !anyCFilter.isEmpty();
     concertList.clear();
     for (const auto& e : list) {
+        QString sur = QString::fromStdString(e.fio.surname);
+        QString nam = QString::fromStdString(e.fio.name);
+        QString pat = QString::fromStdString(e.fio.patronymic);
+        QString play = QString::fromStdString(e.play);
         QString hall = QString::fromStdString(e.hall);
         QString date = QString::fromStdString(e.date);
         if (useHall && !hall.contains(hallFilter, Qt::CaseInsensitive))
@@ -131,6 +148,14 @@ void MainWindow::refreshTables()
             if (!dt.isValid() || dt != dFilter)
                 continue;
         }
+        if (useAnyC && !(
+                sur.contains(anyCFilter, Qt::CaseInsensitive) ||
+                nam.contains(anyCFilter, Qt::CaseInsensitive) ||
+                pat.contains(anyCFilter, Qt::CaseInsensitive) ||
+                play.contains(anyCFilter, Qt::CaseInsensitive) ||
+                hall.contains(anyCFilter, Qt::CaseInsensitive) ||
+                date.contains(anyCFilter, Qt::CaseInsensitive)))
+            continue;
         concertList.push_back(e);
     }
     ui->concertsTable->blockSignals(true);

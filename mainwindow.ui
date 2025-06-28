@@ -83,6 +83,13 @@
           <item>
            <widget class="QLineEdit" name="instrFilterEdit"/>
           </item>
+          <item>
+           <widget class="QLineEdit" name="studentSearchEdit">
+            <property name="placeholderText">
+             <string>Поиск...</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
        </layout>
@@ -166,6 +173,13 @@
                 </property>
                </widget>
               </item>
+               <item>
+                <widget class="QLineEdit" name="concertSearchEdit">
+                 <property name="placeholderText">
+                  <string>Поиск...</string>
+                 </property>
+                </widget>
+               </item>
              </layout>
             </item>
            </layout>
