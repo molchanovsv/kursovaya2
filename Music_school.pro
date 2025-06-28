@@ -1,5 +1,21 @@
 TARGET = MusicGui
 QT += widgets core5compat
-SOURCES += main.cpp mainwindow.cpp AVLTree.cpp DataLoader.cpp FIO.cpp Students_entry.cpp Teacher.cpp
-HEADERS += mainwindow.h AVLTree.h DataLoader.h FIO.h HashTable.h Students_entry.h Teacher.h Concerts_entry.h
+INCLUDEPATH += include
+SOURCES += \
+    src/main.cpp \
+    src/gui/mainwindow.cpp \
+    src/structures/AVLTree.cpp \
+    src/data/DataLoader.cpp \
+    src/structures/FIO.cpp \
+    src/structures/Students_entry.cpp \
+    src/structures/Teacher.cpp
+HEADERS += \
+    include/gui/mainwindow.h \
+    include/structures/AVLTree.h \
+    include/data/DataLoader.h \
+    include/structures/FIO.h \
+    include/structures/HashTable.h \
+    include/structures/Students_entry.h \
+    include/structures/Teacher.h \
+    include/structures/Concerts_entry.h
 FORMS += mainwindow.ui

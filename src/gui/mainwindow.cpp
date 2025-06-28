@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+#include "gui/mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QDateEdit>
 #include <QMessageBox>
@@ -17,7 +17,7 @@
 #include <fstream>
 #include <vector>
 #include <array>
-#include "FIO.h"
+#include "structures/FIO.h"
 
 MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree,
                        const QString& studFile, const QString& concFile,

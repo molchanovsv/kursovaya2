@@ -15,22 +15,22 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Music_school.cpp">
+    <ClCompile Include="src\Music_school.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AVLTree.cpp">
+    <ClCompile Include="src\structures\AVLTree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DataLoader.cpp">
+    <ClCompile Include="src\data\DataLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Students_entry.cpp">
+    <ClCompile Include="src\structures\Students_entry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Teacher.cpp">
+    <ClCompile Include="src\structures\Teacher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FIO.cpp">
+    <ClCompile Include="src\structures\FIO.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,8 +1,8 @@
 ﻿
 #include <iostream>
-#include "DataLoader.h"
-#include "HashTable.h"
-#include "AVLTree.h"
+#include "data/DataLoader.h"
+#include "structures/HashTable.h"
+#include "structures/AVLTree.h"
 #include "GUI.h"
 
 int main() {

@@ -1,7 +1,7 @@
-#include "DataLoader.h"
+#include "data/DataLoader.h"
 #include <fstream>
 #include <iostream>
-#include "FIO.h"
+#include "structures/FIO.h"
 #include <QTextCodec>
 #include <QDebug>
 #include <QRegularExpression>

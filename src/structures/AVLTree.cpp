@@ -1,4 +1,4 @@
-#include "AVLTree.h"
+#include "structures/AVLTree.h"
 #include <algorithm>
 #include <iostream>
 #include <vector>
