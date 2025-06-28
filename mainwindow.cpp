@@ -12,6 +12,7 @@
 #include <QRegularExpression>
 #include <QMenu>
 #include <QDate>
+#include <QCheckBox>
 #include <vector>
 #include <array>
 #include "FIO.h"
@@ -138,7 +139,7 @@ void MainWindow::refreshTables()
                 continue;
             if (!cHall.isEmpty() && !hall.contains(cHall, Qt::CaseInsensitive))
                 continue;
-            if (!cDate.isEmpty() && date != cDate)
+            if (cDateEnabled && !cDate.isEmpty() && date != cDate)
                 continue;
         }
         concertList.push_back(e);
@@ -301,6 +302,7 @@ void MainWindow::searchConcert()
 
     QLineEdit sur, nam, pat, play, hall;
     QDateEdit date;
+    QCheckBox dateCheck("Искать по дате?");
     date.setDisplayFormat("dd.MM.yyyy");
     date.setCalendarPopup(true);
     sur.setText(cSurname);
@@ -310,12 +312,14 @@ void MainWindow::searchConcert()
     hall.setText(cHall);
     if (!cDate.isEmpty())
         date.setDate(QDate::fromString(cDate, "dd.MM.yyyy"));
+    dateCheck.setChecked(cDateEnabled);
 
     layout.addRow("Фамилия", &sur);
     layout.addRow("Имя", &nam);
     layout.addRow("Отчество", &pat);
     layout.addRow("Пьеса", &play);
     layout.addRow("Зал", &hall);
+    layout.addRow(&dateCheck);
     layout.addRow("Дата", &date);
 
     QPushButton clearBtn("Очистить");
@@ -327,6 +331,7 @@ void MainWindow::searchConcert()
         play.clear();
         hall.clear();
         date.setDate(QDate());
+        dateCheck.setChecked(false);
     });
 
     QDialogButtonBox buttons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
@@ -341,8 +346,9 @@ void MainWindow::searchConcert()
         cPlay = play.text();
         cHall = hall.text();
         cDate = date.date().isValid() ? date.date().toString("dd.MM.yyyy") : QString();
+        cDateEnabled = dateCheck.isChecked();
         concertFilterActive = !(cSurname.isEmpty() && cName.isEmpty() && cPatronymic.isEmpty() &&
-                               cPlay.isEmpty() && cHall.isEmpty() && cDate.isEmpty());
+                               cPlay.isEmpty() && cHall.isEmpty() && !(cDateEnabled && !cDate.isEmpty()));
         ui->clearConcertSearchButton->setVisible(concertFilterActive);
         refreshTables();
     }
@@ -368,6 +374,7 @@ void MainWindow::clearConcertSearch()
     cPlay.clear();
     cHall.clear();
     cDate.clear();
+    cDateEnabled = false;
     concertFilterActive = false;
     ui->clearConcertSearchButton->setVisible(false);
     refreshTables();
