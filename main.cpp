@@ -1,6 +1,7 @@
 #include <QApplication>
 #include "mainwindow.h"
 #include "DataLoader.h"
+#include <QDebug>
 #include <QFileDialog>
 #include <QDialog>
 #include <QFormLayout>
@@ -61,24 +62,32 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     QString studentsPath, concertsPath;
-    if (!selectDataFiles(studentsPath, concertsPath))
+    qDebug() << "Starting application";
+    if (!selectDataFiles(studentsPath, concertsPath)) {
+        qDebug() << "File selection canceled";
         return 0;
+    }
+    qDebug() << "Students file:" << studentsPath << "Concerts file:" << concertsPath;
 
     int count = 0;
     Students_entry* records = DataLoader::loadStudents(20, count, studentsPath.toStdString());
+    qDebug() << "Inserting" << count << "students into hash table";
     auto *table = new HashTable(5);
     for(int i=0;i<count;++i)
         table->insert(records[i]);
 
     auto *tree = new AVLTree();
     auto concerts = DataLoader::loadConcertsData(concertsPath.toStdString());
+    qDebug() << "Inserting" << concerts.size() << "concerts into AVL tree";
     for(const auto& c : concerts)
         tree->insert(c);
 
+    qDebug() << "Launching main window";
     MainWindow w(table, tree);
     w.show();
     int res = app.exec();
 
+    qDebug() << "Application exiting";
     delete[] records;
     delete table;
     delete tree;

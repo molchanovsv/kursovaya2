@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <QTextCodec>
+#include <QDebug>
 
 namespace {
     std::string decodeCp1251(const std::string& str) {
@@ -16,6 +17,7 @@ namespace {
 
 namespace DataLoader {
     Students_entry* loadStudents(int n, int& count, const std::string& filename) {
+        qDebug() << "Loading students from" << QString::fromStdString(filename);
         std::ifstream input(filename);
         if (!input.is_open()) {
             std::cerr << "Не удалось открыть файл " << filename << std::endl;
@@ -43,10 +45,12 @@ namespace DataLoader {
             records[count++] = record;
         }
 
+        qDebug() << "Loaded" << count << "students";
         return records;
     }
 
     std::vector<Concerts_entry> loadConcertsData(const std::string& filename) {
+        qDebug() << "Loading concerts from" << QString::fromStdString(filename);
         std::vector<Concerts_entry> entries;
         std::ifstream file(filename);
 
@@ -85,6 +89,7 @@ namespace DataLoader {
             entries.push_back(entry);
         }
 
+        qDebug() << "Loaded" << entries.size() << "concerts";
         return entries;
     }
 }
