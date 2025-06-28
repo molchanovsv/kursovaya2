@@ -1,0 +1,141 @@
+#include "AVLTree.h"
+#include <algorithm>
+#include <iostream>
+
+AVLTree::Node::Node(const Concerts_entry& entry)
+    : data(entry), left(nullptr), right(nullptr), height(1) {
+    std::string fullName = entry.fio.surname + entry.fio.name + entry.fio.patronymic;
+    key = 0;
+    for (unsigned char c : fullName) {
+        key += static_cast<int>(c);
+    }
+}
+
+AVLTree::AVLTree() : root(nullptr) {}
+AVLTree::~AVLTree() { clear(root); }
+
+int AVLTree::height(Node* node) const {
+    return node ? node->height : 0;
+}
+
+int AVLTree::balanceFactor(Node* node) const {
+    return height(node->right) - height(node->left);
+}
+
+void AVLTree::updateHeight(Node* node) {
+    int hl = height(node->left);
+    int hr = height(node->right);
+    node->height = (hl > hr ? hl : hr) + 1;
+}
+
+AVLTree::Node* AVLTree::rotateRight(Node* y) {
+    Node* x = y->left;
+    y->left = x->right;
+    x->right = y;
+    updateHeight(y);
+    updateHeight(x);
+    return x;
+}
+
+AVLTree::Node* AVLTree::rotateLeft(Node* x) {
+    Node* y = x->right;
+    x->right = y->left;
+    y->left = x;
+    updateHeight(x);
+    updateHeight(y);
+    return y;
+}
+
+AVLTree::Node* AVLTree::balance(Node* node) {
+    updateHeight(node);
+    if (balanceFactor(node) == 2) {
+        if (balanceFactor(node->right) < 0)
+            node->right = rotateRight(node->right);
+        return rotateLeft(node);
+    }
+    if (balanceFactor(node) == -2) {
+        if (balanceFactor(node->left) > 0)
+            node->left = rotateLeft(node->left);
+        return rotateRight(node);
+    }
+    return node;
+}
+
+AVLTree::Node* AVLTree::insert(Node* node, const Concerts_entry& entry) {
+	if (!node) return new Node(entry);
+
+	std::string fullNameCurrent = node->data.fio.surname + node->data.fio.name + node->data.fio.patronymic;
+	std::string fullNameNew = entry.fio.surname + entry.fio.name + entry.fio.patronymic;
+
+	if (fullNameNew < fullNameCurrent)
+		node->left = insert(node->left, entry);
+	else
+		node->right = insert(node->right, entry);
+
+	return balance(node);
+}
+
+AVLTree::Node* AVLTree::findMin(Node* node) const{
+	return node->left ? findMin(node->left) : node;
+}
+
+AVLTree::Node* AVLTree::removeMin(Node* node) {
+	if (!node->left) return node->right;
+	node->left = removeMin(node->left);
+	return balance(node);
+}
+
+AVLTree::Node* AVLTree::remove(Node* node, const FIO& fio) {
+	if (!node) return nullptr;
+
+	std::string fullNameCurrent = node->data.fio.surname + node->data.fio.name + node->data.fio.patronymic;
+	std::string fullNameToRemove = fio.surname + fio.name + fio.patronymic;
+
+	if (fullNameToRemove < fullNameCurrent)
+		node->left = remove(node->left, fio);
+	else if (fullNameToRemove > fullNameCurrent)
+		node->right = remove(node->right, fio);
+	else {
+		Node* left = node->left;
+		Node* right = node->right;
+		delete node;
+
+		if (!right) return left;
+
+		Node* min = findMin(right);
+		min->right = removeMin(right);
+		min->left = left;
+		return balance(min);
+	}
+	return balance(node);
+}
+
+void AVLTree::clear(Node* node) {
+	if (node) {
+		clear(node->left);
+		clear(node->right);
+		delete node;
+	}
+}
+
+void AVLTree::insert(const Concerts_entry& entry) {
+	root = insert(root, entry);
+}
+
+void AVLTree::remove(const FIO& fio) {
+	root = remove(root, fio);
+}
+
+void AVLTree::print(Node* node, std::ostream& os, int level) const {
+	if (node) {
+		print(node->right, os, level + 1);
+		for (int i = 0; i < level; i++) os << "    ";
+		os << node->data.fio << std::endl;
+		print(node->left, os, level + 1);
+	}
+}
+
+void AVLTree::print(std::ostream& os) const {
+	print(root, os);
+	os << std::endl;
+}
