@@ -35,7 +35,8 @@ private:
     void toVector(Node* node, std::vector<Concerts_entry>& vec) const;
     void searchHall(Node* node, const std::string& hall, std::vector<Concerts_entry>& vec) const;
     void searchDate(Node* node, const std::string& date, std::vector<Concerts_entry>& vec) const;
-    void fillTreeWidget(Node* node, QTreeWidgetItem* item, QTreeWidget* tree, const FIO* highlight) const;
+    void fillTreeWidget(Node* node, QTreeWidgetItem* item, QTreeWidget* tree,
+                        const FIO* highlight, const QString& prefix) const;
 
 public:
     AVLTree();

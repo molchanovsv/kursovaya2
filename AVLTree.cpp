@@ -180,11 +180,13 @@ std::vector<Concerts_entry> AVLTree::searchByDate(const std::string& date) const
     return res;
 }
 
-void AVLTree::fillTreeWidget(Node* node, QTreeWidgetItem* parent, QTreeWidget* tree, const FIO* highlight) const {
+void AVLTree::fillTreeWidget(Node* node, QTreeWidgetItem* parent, QTreeWidget* tree,
+                             const FIO* highlight, const QString& prefix) const {
     if (!node) return;
-    QString text = QString::fromStdString(node->data.fio.surname + " " + node->data.fio.name + " " +
+    QString base = QString::fromStdString(node->data.fio.surname + " " + node->data.fio.name + " " +
                                           node->data.fio.patronymic + " - " + node->data.play +
                                           " - " + node->data.hall + " - " + node->data.date);
+    QString text = prefix.isEmpty() ? base : prefix + base;
     QTreeWidgetItem* item;
     if (parent)
         item = new QTreeWidgetItem(parent);
@@ -198,18 +200,18 @@ void AVLTree::fillTreeWidget(Node* node, QTreeWidgetItem* parent, QTreeWidget* t
         highlight->surname == node->data.fio.surname &&
         highlight->name == node->data.fio.name &&
         highlight->patronymic == node->data.fio.patronymic) {
-        item->setBackground(0, QBrush(Qt::yellow));
+        item->setBackground(0, QBrush(Qt::magenta));
     }
 
-    fillTreeWidget(node->left, item, tree, highlight);
-    fillTreeWidget(node->right, item, tree, highlight);
+    fillTreeWidget(node->left, item, tree, highlight, "L: ");
+    fillTreeWidget(node->right, item, tree, highlight, "R: ");
 }
 
 void AVLTree::buildTreeWidget(QTreeWidget* widget, const FIO* highlight) const {
     if (!widget)
         return;
     widget->clear();
-    fillTreeWidget(root, nullptr, widget, highlight);
+    fillTreeWidget(root, nullptr, widget, highlight, "");
     widget->expandAll();
 }
 
