@@ -11,8 +11,13 @@ namespace {
 }
 
 namespace DataLoader {
-    Students_entry* loadStudents(int n, int& count) {
-        std::ifstream input("students.txt");
+    Students_entry* loadStudents(int n, int& count, const std::string& filename) {
+        std::ifstream input(filename);
+        if (!input.is_open()) {
+            std::cerr << "Не удалось открыть файл " << filename << std::endl;
+            count = 0;
+            return new Students_entry[n];
+        }
         Students_entry* records = new Students_entry[n];
         count = 0;
 

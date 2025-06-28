@@ -7,7 +7,7 @@
 #include <string>
 
 namespace DataLoader {
-    Students_entry* loadStudents(int n, int& count);
+    Students_entry* loadStudents(int n, int& count, const std::string& filename);
     std::vector<Concerts_entry> loadConcertsData(const std::string& filename);
 }
 
