@@ -35,6 +35,8 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree, QWidget* 
     ui->concertsTable->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->studentsTable, &QTableWidget::customContextMenuRequested, this, &MainWindow::studentContextMenu);
     connect(ui->concertsTable, &QTableWidget::customContextMenuRequested, this, &MainWindow::concertContextMenu);
+    ui->concertTree->setHeaderHidden(true);
+    ui->reportTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->mainSplitter->setStretchFactor(0, 1);
     ui->mainSplitter->setStretchFactor(1, 1);
     ui->concertsSplitter->setStretchFactor(0, 1);
@@ -51,7 +53,7 @@ void MainWindow::refreshTables()
     ui->studentsTable->clear();
     ui->studentsTable->setColumnCount(5);
     QStringList studentHeaders;
-    studentHeaders << "Surname" << "Name" << "Patronymic" << "Instrument" << "Teacher";
+    studentHeaders << "Фамилия" << "Имя" << "Отчество" << "Инструмент" << "Учитель";
     ui->studentsTable->setHorizontalHeaderLabels(studentHeaders);
     studentRowMap.clear();
     int total = students->getSize();
@@ -78,7 +80,7 @@ void MainWindow::refreshTables()
     ui->concertsTable->clear();
     ui->concertsTable->setColumnCount(6);
     QStringList headers;
-    headers << "Surname" << "Name" << "Patronymic" << "Play" << "Hall" << "Date";
+    headers << "Фамилия" << "Имя" << "Отчество" << "Пьеса" << "Зал" << "Дата";
     ui->concertsTable->setHorizontalHeaderLabels(headers);
     int count = static_cast<int>(list.size());
     ui->concertsTable->setRowCount(count);
@@ -108,7 +110,7 @@ void MainWindow::addStudent()
 void MainWindow::removeStudent()
 {
     FIO f;
-    if (!fioDialog(f, nullptr, "Remove Student"))
+    if (!fioDialog(f, nullptr, "Удалить ученика"))
         return;
     students->remove(f);
     refreshTables();
@@ -118,7 +120,7 @@ void MainWindow::editStudent()
 {
     int row = ui->studentsTable->currentRow();
     if (row < 0 || row >= static_cast<int>(studentRowMap.size())) {
-        QMessageBox::warning(this, "Edit Student", "Select a student in the table.");
+        QMessageBox::warning(this, "Редактировать ученика", "Выберите запись в таблице.");
         return;
     }
 
@@ -145,7 +147,7 @@ void MainWindow::addConcert()
 void MainWindow::removeConcert()
 {
     FIO f;
-    if (!fioDialog(f, nullptr, "Remove Concert"))
+    if (!fioDialog(f, nullptr, "Удалить концерт"))
         return;
     concerts->remove(f);
     refreshTables();
@@ -157,7 +159,7 @@ void MainWindow::editConcert()
     std::vector<Concerts_entry> list;
     concerts->toVector(list);
     if (row < 0 || row >= static_cast<int>(list.size())) {
-        QMessageBox::warning(this, "Edit Concert", "Select a concert in the table.");
+        QMessageBox::warning(this, "Редактировать концерт", "Выберите запись в таблице.");
         return;
     }
 
@@ -226,7 +228,7 @@ void MainWindow::searchConcert()
 bool MainWindow::studentDialog(Students_entry& out, const Students_entry* initial)
 {
     QDialog dialog(this);
-    dialog.setWindowTitle(initial ? "Edit Student" : "Add Student");
+    dialog.setWindowTitle(initial ? "Редактировать ученика" : "Добавить ученика");
     QFormLayout layout(&dialog);
 
     QLabel currentLabel;
@@ -248,12 +250,12 @@ bool MainWindow::studentDialog(Students_entry& out, const Students_entry* initia
         teacherInitials.setText(QString::fromStdString(initial->teacher.initials));
     }
 
-    layout.addRow("Surname", &surname);
-    layout.addRow("Name", &name);
-    layout.addRow("Patronymic", &patronymic);
-    layout.addRow("Instrument", &instrument);
-    layout.addRow("Teacher surname", &teacherSurname);
-    layout.addRow("Teacher initials", &teacherInitials);
+    layout.addRow("Фамилия", &surname);
+    layout.addRow("Имя", &name);
+    layout.addRow("Отчество", &patronymic);
+    layout.addRow("Инструмент", &instrument);
+    layout.addRow("Фамилия учителя", &teacherSurname);
+    layout.addRow("Инициалы учителя", &teacherInitials);
 
     QDialogButtonBox buttons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     layout.addRow(&buttons);
@@ -289,7 +291,7 @@ bool MainWindow::studentDialog(Students_entry& out, const Students_entry* initia
 bool MainWindow::concertDialog(Concerts_entry& out, const Concerts_entry* initial)
 {
     QDialog dialog(this);
-    dialog.setWindowTitle(initial ? "Edit Concert" : "Add Concert");
+    dialog.setWindowTitle(initial ? "Редактировать концерт" : "Добавить концерт");
     QFormLayout layout(&dialog);
 
     QLabel currentLabel;
@@ -311,12 +313,12 @@ bool MainWindow::concertDialog(Concerts_entry& out, const Concerts_entry* initia
         date.setText(QString::fromStdString(initial->date));
     }
 
-    layout.addRow("Surname", &surname);
-    layout.addRow("Name", &name);
-    layout.addRow("Patronymic", &patronymic);
-    layout.addRow("Play", &play);
-    layout.addRow("Hall", &hall);
-    layout.addRow("Date", &date);
+    layout.addRow("Фамилия", &surname);
+    layout.addRow("Имя", &name);
+    layout.addRow("Отчество", &patronymic);
+    layout.addRow("Пьеса", &play);
+    layout.addRow("Зал", &hall);
+    layout.addRow("Дата", &date);
 
     QDialogButtonBox buttons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     layout.addRow(&buttons);
@@ -368,13 +370,14 @@ void MainWindow::updateReport()
 {
     std::vector<Concerts_entry> concertsList;
     concerts->toVector(concertsList);
-    std::vector<std::array<QString,6>> rows;
+    std::vector<std::array<QString,8>> rows;
     for (const auto& c : concertsList) {
         Students_entry st;
         if (students->find(c.fio, st)) {
-            QString fio = QString::fromStdString(c.fio.surname + " " + c.fio.name + " " + c.fio.patronymic);
             QString teacher = QString::fromStdString(st.teacher.surname + " " + st.teacher.initials);
-            rows.push_back({fio,
+            rows.push_back({QString::fromStdString(c.fio.surname),
+                            QString::fromStdString(c.fio.name),
+                            QString::fromStdString(c.fio.patronymic),
                             QString::fromStdString(st.instrument),
                             teacher,
                             QString::fromStdString(c.play),
@@ -383,14 +386,16 @@ void MainWindow::updateReport()
         }
     }
     ui->reportTable->clear();
-    ui->reportTable->setColumnCount(6);
+    ui->reportTable->setColumnCount(8);
     QStringList headers;
-    headers << "FIO" << "Instrument" << "Teacher" << "Play" << "Hall" << "Date";
+    headers << "Фамилия" << "Имя" << "Отчество" << "Инструмент" << "Учитель" << "Пьеса" << "Зал" << "Дата";
     ui->reportTable->setHorizontalHeaderLabels(headers);
     ui->reportTable->setRowCount(static_cast<int>(rows.size()));
     for (int i = 0; i < static_cast<int>(rows.size()); ++i) {
-        for (int j = 0; j < 6; ++j) {
-            ui->reportTable->setItem(i, j, new QTableWidgetItem(rows[i][j]));
+        for (int j = 0; j < 8; ++j) {
+            QTableWidgetItem* item = new QTableWidgetItem(rows[i][j]);
+            item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+            ui->reportTable->setItem(i, j, item);
         }
     }
 }
@@ -408,9 +413,9 @@ bool MainWindow::fioDialog(FIO& out, const FIO* initial, const QString& title)
         patronymic.setText(QString::fromStdString(initial->patronymic));
     }
 
-    layout.addRow("Surname", &surname);
-    layout.addRow("Name", &name);
-    layout.addRow("Patronymic", &patronymic);
+    layout.addRow("Фамилия", &surname);
+    layout.addRow("Имя", &name);
+    layout.addRow("Отчество", &patronymic);
 
     QDialogButtonBox buttons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     layout.addRow(&buttons);

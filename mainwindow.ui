@@ -16,7 +16,7 @@
      <widget class="QTabWidget" name="tabWidget">
       <widget class="QWidget" name="mainTab">
        <attribute name="title">
-        <string>Main</string>
+        <string>Главная</string>
        </attribute>
        <layout class="QVBoxLayout" name="tabMainLayout">
         <item>
@@ -34,28 +34,28 @@
           <item>
            <widget class="QPushButton" name="addStudentButton">
             <property name="text">
-             <string>Add</string>
+             <string>Добавить</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="editStudentButton">
             <property name="text">
-             <string>Edit</string>
+             <string>Редактировать</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="removeStudentButton">
             <property name="text">
-             <string>Remove</string>
+             <string>Удалить</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="searchStudentButton">
             <property name="text">
-             <string>Search</string>
+             <string>Поиск</string>
             </property>
            </widget>
           </item>
@@ -79,28 +79,28 @@
               <item>
                <widget class="QPushButton" name="addConcertButton">
             <property name="text">
-             <string>Add</string>
+             <string>Добавить</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="editConcertButton">
             <property name="text">
-             <string>Edit</string>
+             <string>Редактировать</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="removeConcertButton">
             <property name="text">
-             <string>Remove</string>
+             <string>Удалить</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="searchConcertButton">
             <property name="text">
-             <string>Search</string>
+             <string>Поиск</string>
             </property>
            </widget>
               </item>
