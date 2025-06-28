@@ -10,6 +10,7 @@
 #include <QTreeWidget>
 #include <QBrush>
 #include <QRegularExpression>
+#include <QMenu>
 #include <vector>
 #include <sstream>
 #include "FIO.h"
@@ -29,6 +30,10 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree, QWidget* 
     connect(ui->concertsTable, &QTableWidget::itemSelectionChanged, this, &MainWindow::updateConcertTree);
     connect(ui->studentsTable, &QTableWidget::cellChanged, this, &MainWindow::studentCellChanged);
     connect(ui->concertsTable, &QTableWidget::cellChanged, this, &MainWindow::concertCellChanged);
+    ui->studentsTable->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->concertsTable->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->studentsTable, &QTableWidget::customContextMenuRequested, this, &MainWindow::studentContextMenu);
+    connect(ui->concertsTable, &QTableWidget::customContextMenuRequested, this, &MainWindow::concertContextMenu);
     refreshTables();
     updateConcertTree();
 }
@@ -499,6 +504,45 @@ void MainWindow::concertCellChanged(int row, int column)
     concerts->insert(newEntry);
     refreshTables();
     ui->concertsTable->setCurrentCell(row, column);
+}
+
+void MainWindow::studentContextMenu(const QPoint& pos)
+{
+    int row = ui->studentsTable->rowAt(pos.y());
+    if (row < 0 || !ui->studentsTable->item(row, 0))
+        return;
+    ui->studentsTable->setCurrentCell(row, 0);
+    QMenu menu(this);
+    QAction* edit = menu.addAction("Edit");
+    QAction* remove = menu.addAction("Remove");
+    QAction* chosen = menu.exec(ui->studentsTable->viewport()->mapToGlobal(pos));
+    if (chosen == edit) {
+        editStudent();
+    } else if (chosen == remove) {
+        Students_entry entry = students->getEntry(row);
+        students->remove(entry.fio);
+        refreshTables();
+    }
+}
+
+void MainWindow::concertContextMenu(const QPoint& pos)
+{
+    int row = ui->concertsTable->rowAt(pos.y());
+    std::vector<Concerts_entry> list;
+    concerts->toVector(list);
+    if (row < 0 || row >= static_cast<int>(list.size()))
+        return;
+    ui->concertsTable->setCurrentCell(row, 0);
+    QMenu menu(this);
+    QAction* edit = menu.addAction("Edit");
+    QAction* remove = menu.addAction("Remove");
+    QAction* chosen = menu.exec(ui->concertsTable->viewport()->mapToGlobal(pos));
+    if (chosen == edit) {
+        editConcert();
+    } else if (chosen == remove) {
+        concerts->remove(list[row].fio);
+        refreshTables();
+    }
 }
 
 bool MainWindow::validateWord(const QString& word) const

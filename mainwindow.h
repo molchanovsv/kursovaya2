@@ -28,6 +28,8 @@ private slots:
     void updateConcertTree();
     void studentCellChanged(int row, int column);
     void concertCellChanged(int row, int column);
+    void studentContextMenu(const QPoint& pos);
+    void concertContextMenu(const QPoint& pos);
 
 private:
     Ui::MainWindow *ui;
