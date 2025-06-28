@@ -34,12 +34,19 @@ MainWindow::~MainWindow() { delete ui; }
 void MainWindow::refreshTables()
 {
     ui->studentsTable->clear();
-    ui->studentsTable->setColumnCount(1);
+    ui->studentsTable->setColumnCount(5);
+    QStringList studentHeaders;
+    studentHeaders << "Surname" << "Name" << "Patronymic" << "Instrument" << "Teacher";
+    ui->studentsTable->setHorizontalHeaderLabels(studentHeaders);
     ui->studentsTable->setRowCount(students->getFullSize());
     for (int i = 0; i < students->getFullSize(); ++i) {
         if (students->isOccupied(i)) {
-            QString text = QString::fromStdString(students->entryToString(i));
-            ui->studentsTable->setItem(i, 0, new QTableWidgetItem(text));
+            const auto& st = students->getEntry(i);
+            ui->studentsTable->setItem(i, 0, new QTableWidgetItem(QString::fromStdString(st.fio.surname)));
+            ui->studentsTable->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(st.fio.name)));
+            ui->studentsTable->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(st.fio.patronymic)));
+            ui->studentsTable->setItem(i, 3, new QTableWidgetItem(QString::fromStdString(st.instrument)));
+            ui->studentsTable->setItem(i, 4, new QTableWidgetItem(QString::fromStdString(st.teacher.surname + " " + st.teacher.initials)));
         }
     }
 
