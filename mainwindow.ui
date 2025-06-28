@@ -84,14 +84,24 @@
            <widget class="QLineEdit" name="instrFilterEdit"/>
           </item>
           <item>
-           <widget class="QLineEdit" name="studentSearchEdit">
-            <property name="placeholderText">
-             <string>Поиск...</string>
+           <widget class="QPushButton" name="searchStudentButton">
+            <property name="text">
+             <string>Поиск</string>
             </property>
            </widget>
           </item>
-         </layout>
-        </item>
+          <item>
+           <widget class="QPushButton" name="resetStudentFilterButton">
+            <property name="text">
+             <string>Сбросить фильтр</string>
+            </property>
+            <property name="visible">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+        </layout>
+       </item>
        </layout>
       </widget>
           <widget class="QWidget" name="concertsPanel">
@@ -135,13 +145,6 @@
             </property>
            </widget>
           </item>
-          <item>
-           <widget class="QPushButton" name="searchConcertButton">
-            <property name="text">
-             <string>Поиск</string>
-            </property>
-           </widget>
-              </item>
              </layout>
             </item>
             <item>
@@ -174,12 +177,22 @@
                </widget>
               </item>
                <item>
-                <widget class="QLineEdit" name="concertSearchEdit">
-                 <property name="placeholderText">
-                  <string>Поиск...</string>
-                 </property>
-                </widget>
-               </item>
+               <widget class="QPushButton" name="searchConcertButton">
+                <property name="text">
+                 <string>Поиск</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="resetConcertFilterButton">
+                <property name="text">
+                 <string>Сбросить фильтр</string>
+                </property>
+                <property name="visible">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
              </layout>
             </item>
            </layout>

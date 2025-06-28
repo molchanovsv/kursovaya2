@@ -5,6 +5,7 @@
 #include "HashTable.h"
 #include "AVLTree.h"
 #include <vector>
+#include <QString>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -25,7 +26,9 @@ private slots:
     void removeConcert();
     void editConcert();
     void searchStudent();
+    void resetStudentFilter();
     void searchConcert();
+    void resetConcertFilter();
     void updateConcertTree();
     void updateReport();
     void studentCellChanged(int row, int column);
@@ -39,6 +42,13 @@ private:
     AVLTree* concerts;
     std::vector<int> studentRowMap;
     std::vector<Concerts_entry> concertList;
+
+    // search filters
+    bool studentFilterActive = false;
+    QString sSurname, sName, sPatronymic, sInstr, sTeacher;
+    bool concertFilterActive = false;
+    QString cSurname, cName, cPatronymic, cPlay, cHall;
+    QString cDate;
 
     bool studentDialog(Students_entry& out, const Students_entry* initial = nullptr);
     bool concertDialog(Concerts_entry& out, const Concerts_entry* initial = nullptr);

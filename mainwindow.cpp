@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QInputDialog>
+#include <QDateEdit>
 #include <QMessageBox>
 #include <QDialog>
 #include <QFormLayout>
@@ -27,8 +27,9 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree, QWidget* 
     connect(ui->removeConcertButton, &QPushButton::clicked, this, &MainWindow::removeConcert);
     connect(ui->editConcertButton, &QPushButton::clicked, this, &MainWindow::editConcert);
     connect(ui->searchConcertButton, &QPushButton::clicked, this, &MainWindow::searchConcert);
-    connect(ui->studentSearchEdit, &QLineEdit::textChanged, this, &MainWindow::refreshTables);
-    connect(ui->concertSearchEdit, &QLineEdit::textChanged, this, &MainWindow::refreshTables);
+    connect(ui->resetConcertFilterButton, &QPushButton::clicked, this, &MainWindow::resetConcertFilter);
+    connect(ui->searchStudentButton, &QPushButton::clicked, this, &MainWindow::searchStudent);
+    connect(ui->resetStudentFilterButton, &QPushButton::clicked, this, &MainWindow::resetStudentFilter);
     connect(ui->concertsTable, &QTableWidget::itemSelectionChanged, this, &MainWindow::updateConcertTree);
     connect(ui->studentsTable, &QTableWidget::cellChanged, this, &MainWindow::studentCellChanged);
     connect(ui->concertsTable, &QTableWidget::cellChanged, this, &MainWindow::concertCellChanged);
@@ -77,8 +78,7 @@ void MainWindow::refreshTables()
     bool useName = ui->nameFilterCheck->isChecked() && !nameFilter.isEmpty();
     QString instrFilter = ui->instrFilterEdit->text();
     bool useInstr = ui->instrFilterCheck->isChecked() && !instrFilter.isEmpty();
-    QString anyFilter = ui->studentSearchEdit->text();
-    bool useAny = !anyFilter.isEmpty();
+    bool useSearch = studentFilterActive;
     studentRowMap.clear();
     int row = 0;
     for (int i = 0; i < students->getFullSize(); ++i) {
@@ -96,13 +96,18 @@ void MainWindow::refreshTables()
                 continue;
             if (useInstr && !instr.contains(instrFilter, Qt::CaseInsensitive))
                 continue;
-            if (useAny && !(
-                    sur.contains(anyFilter, Qt::CaseInsensitive) ||
-                    nam.contains(anyFilter, Qt::CaseInsensitive) ||
-                    pat.contains(anyFilter, Qt::CaseInsensitive) ||
-                    instr.contains(anyFilter, Qt::CaseInsensitive) ||
-                    teacher.contains(anyFilter, Qt::CaseInsensitive)))
-                continue;
+            if (useSearch) {
+                if (!sSurname.isEmpty() && !sur.contains(sSurname, Qt::CaseInsensitive))
+                    continue;
+                if (!sName.isEmpty() && !nam.contains(sName, Qt::CaseInsensitive))
+                    continue;
+                if (!sPatronymic.isEmpty() && !pat.contains(sPatronymic, Qt::CaseInsensitive))
+                    continue;
+                if (!sInstr.isEmpty() && !instr.contains(sInstr, Qt::CaseInsensitive))
+                    continue;
+                if (!sTeacher.isEmpty() && !teacher.contains(sTeacher, Qt::CaseInsensitive))
+                    continue;
+            }
             QTableWidgetItem* vh = new QTableWidgetItem(QString::number(i));
             vh->setTextAlignment(Qt::AlignCenter);
             ui->studentsTable->setVerticalHeaderItem(row, vh);
@@ -131,8 +136,7 @@ void MainWindow::refreshTables()
     bool useHall = ui->concertHallFilterCheck->isChecked() && !hallFilter.isEmpty();
     QDate dFilter = ui->concertDateFilterEdit->date();
     bool useDate = ui->concertDateFilterCheck->isChecked();
-    QString anyCFilter = ui->concertSearchEdit->text();
-    bool useAnyC = !anyCFilter.isEmpty();
+    bool useSearchC = concertFilterActive;
     concertList.clear();
     for (const auto& e : list) {
         QString sur = QString::fromStdString(e.fio.surname);
@@ -148,14 +152,20 @@ void MainWindow::refreshTables()
             if (!dt.isValid() || dt != dFilter)
                 continue;
         }
-        if (useAnyC && !(
-                sur.contains(anyCFilter, Qt::CaseInsensitive) ||
-                nam.contains(anyCFilter, Qt::CaseInsensitive) ||
-                pat.contains(anyCFilter, Qt::CaseInsensitive) ||
-                play.contains(anyCFilter, Qt::CaseInsensitive) ||
-                hall.contains(anyCFilter, Qt::CaseInsensitive) ||
-                date.contains(anyCFilter, Qt::CaseInsensitive)))
-            continue;
+        if (useSearchC) {
+            if (!cSurname.isEmpty() && !sur.contains(cSurname, Qt::CaseInsensitive))
+                continue;
+            if (!cName.isEmpty() && !nam.contains(cName, Qt::CaseInsensitive))
+                continue;
+            if (!cPatronymic.isEmpty() && !pat.contains(cPatronymic, Qt::CaseInsensitive))
+                continue;
+            if (!cPlay.isEmpty() && !play.contains(cPlay, Qt::CaseInsensitive))
+                continue;
+            if (!cHall.isEmpty() && !hall.contains(cHall, Qt::CaseInsensitive))
+                continue;
+            if (!cDate.isEmpty() && date != cDate)
+                continue;
+        }
         concertList.push_back(e);
     }
     ui->concertsTable->blockSignals(true);
@@ -261,54 +271,92 @@ void MainWindow::editConcert()
 
 void MainWindow::searchStudent()
 {
-    QStringList types;
-    types << "Name" << "Instrument";
-    bool ok = false;
-    QString type = QInputDialog::getItem(this, "Search Student", "Search by:", types, 0, false, &ok);
-    if (!ok || type.isEmpty())
-        return;
-    QString query = QInputDialog::getText(this, "Search Student", "Value:", QLineEdit::Normal, QString(), &ok);
-    if (!ok)
-        return;
-    std::vector<Students_entry> results;
-    if (type == "Name")
-        results = students->searchByName(query.toStdString());
-    else
-        results = students->searchByInstrument(query.toStdString());
+    QDialog dialog(this);
+    dialog.setWindowTitle("Фильтр учеников");
+    QFormLayout layout(&dialog);
 
-    QString text;
-    for (const auto& st : results)
-        text += QString::fromStdString(st.fio.surname + " " + st.fio.name + " " + st.fio.patronymic +
-                                       " - " + st.instrument + " (" + st.teacher.surname + " " + st.teacher.initials + ")\n");
-    if (text.isEmpty())
-        text = "Not found";
-    QMessageBox::information(this, "Results", text);
+    QLineEdit sur, nam, pat, instr, teacher;
+    layout.addRow("Фамилия", &sur);
+    layout.addRow("Имя", &nam);
+    layout.addRow("Отчество", &pat);
+    layout.addRow("Инструмент", &instr);
+    layout.addRow("Учитель", &teacher);
+
+    QDialogButtonBox buttons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    layout.addRow(&buttons);
+    connect(&buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(&buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        sSurname = sur.text();
+        sName = nam.text();
+        sPatronymic = pat.text();
+        sInstr = instr.text();
+        sTeacher = teacher.text();
+        studentFilterActive = true;
+        ui->resetStudentFilterButton->setVisible(true);
+        refreshTables();
+    }
 }
 
 void MainWindow::searchConcert()
 {
-    QStringList types;
-    types << "Date" << "Hall";
-    bool ok = false;
-    QString type = QInputDialog::getItem(this, "Search Concert", "Search by:", types, 0, false, &ok);
-    if (!ok || type.isEmpty())
-        return;
-    QString query = QInputDialog::getText(this, "Search Concert", "Value:", QLineEdit::Normal, QString(), &ok);
-    if (!ok)
-        return;
-    std::vector<Concerts_entry> results;
-    if (type == "Date")
-        results = concerts->searchByDate(query.toStdString());
-    else
-        results = concerts->searchByHall(query.toStdString());
+    QDialog dialog(this);
+    dialog.setWindowTitle("Фильтр концертов");
+    QFormLayout layout(&dialog);
 
-    QString text;
-    for (const auto& e : results)
-        text += QString::fromStdString(e.fio.surname + " " + e.fio.name + " " + e.fio.patronymic +
-                                       " - " + e.play + " - " + e.hall + " - " + e.date + "\n");
-    if (text.isEmpty())
-        text = "Not found";
-    QMessageBox::information(this, "Results", text);
+    QLineEdit sur, nam, pat, play, hall;
+    QDateEdit date;
+    date.setDisplayFormat("dd.MM.yyyy");
+    date.setCalendarPopup(true);
+    layout.addRow("Фамилия", &sur);
+    layout.addRow("Имя", &nam);
+    layout.addRow("Отчество", &pat);
+    layout.addRow("Пьеса", &play);
+    layout.addRow("Зал", &hall);
+    layout.addRow("Дата", &date);
+
+    QDialogButtonBox buttons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    layout.addRow(&buttons);
+    connect(&buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(&buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        cSurname = sur.text();
+        cName = nam.text();
+        cPatronymic = pat.text();
+        cPlay = play.text();
+        cHall = hall.text();
+        cDate = date.date().isNull() ? QString() : date.date().toString("dd.MM.yyyy");
+        concertFilterActive = true;
+        ui->resetConcertFilterButton->setVisible(true);
+        refreshTables();
+    }
+}
+
+void MainWindow::resetStudentFilter()
+{
+    studentFilterActive = false;
+    sSurname.clear();
+    sName.clear();
+    sPatronymic.clear();
+    sInstr.clear();
+    sTeacher.clear();
+    ui->resetStudentFilterButton->setVisible(false);
+    refreshTables();
+}
+
+void MainWindow::resetConcertFilter()
+{
+    concertFilterActive = false;
+    cSurname.clear();
+    cName.clear();
+    cPatronymic.clear();
+    cPlay.clear();
+    cHall.clear();
+    cDate.clear();
+    ui->resetConcertFilterButton->setVisible(false);
+    refreshTables();
 }
 
 bool MainWindow::studentDialog(Students_entry& out, const Students_entry* initial)
