@@ -64,19 +64,20 @@ void MainWindow::refreshTables()
     concerts->toVector(list);
     ui->concertsTable->blockSignals(true);
     ui->concertsTable->clear();
-    ui->concertsTable->setColumnCount(4);
+    ui->concertsTable->setColumnCount(6);
     QStringList headers;
-    headers << "FIO" << "Play" << "Hall" << "Date";
+    headers << "Surname" << "Name" << "Patronymic" << "Play" << "Hall" << "Date";
     ui->concertsTable->setHorizontalHeaderLabels(headers);
     int count = static_cast<int>(list.size());
     ui->concertsTable->setRowCount(count);
     for (int i = 0; i < count; ++i) {
         const auto& e = list[i];
-        QString fio = QString::fromStdString(e.fio.surname + " " + e.fio.name + " " + e.fio.patronymic);
-        ui->concertsTable->setItem(i, 0, new QTableWidgetItem(fio));
-        ui->concertsTable->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(e.play)));
-        ui->concertsTable->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(e.hall)));
-        ui->concertsTable->setItem(i, 3, new QTableWidgetItem(QString::fromStdString(e.date)));
+        ui->concertsTable->setItem(i, 0, new QTableWidgetItem(QString::fromStdString(e.fio.surname)));
+        ui->concertsTable->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(e.fio.name)));
+        ui->concertsTable->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(e.fio.patronymic)));
+        ui->concertsTable->setItem(i, 3, new QTableWidgetItem(QString::fromStdString(e.play)));
+        ui->concertsTable->setItem(i, 4, new QTableWidgetItem(QString::fromStdString(e.hall)));
+        ui->concertsTable->setItem(i, 5, new QTableWidgetItem(QString::fromStdString(e.date)));
     }
     ui->concertsTable->blockSignals(false);
     updateConcertTree();
@@ -468,12 +469,12 @@ void MainWindow::concertCellChanged(int row, int column)
         return item ? item->text().toStdString() : oldVal;
     };
 
-    std::string fio = getText(0, oldEntry.fio.surname + " " + oldEntry.fio.name + " " + oldEntry.fio.patronymic);
-    std::istringstream ss(fio);
-    ss >> newEntry.fio.surname >> newEntry.fio.name >> newEntry.fio.patronymic;
-    newEntry.play = getText(1, oldEntry.play);
-    newEntry.hall = getText(2, oldEntry.hall);
-    newEntry.date = getText(3, oldEntry.date);
+    newEntry.fio.surname = getText(0, oldEntry.fio.surname);
+    newEntry.fio.name = getText(1, oldEntry.fio.name);
+    newEntry.fio.patronymic = getText(2, oldEntry.fio.patronymic);
+    newEntry.play = getText(3, oldEntry.play);
+    newEntry.hall = getText(4, oldEntry.hall);
+    newEntry.date = getText(5, oldEntry.date);
 
     if (newEntry.fio == oldEntry.fio && newEntry.play == oldEntry.play &&
         newEntry.hall == oldEntry.hall && newEntry.date == oldEntry.date)
