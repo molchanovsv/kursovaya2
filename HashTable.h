@@ -4,6 +4,7 @@
 #include "Students_entry.h"
 #include <string>
 #include <ostream>
+#include <vector>
 
 class HashTable {
 private:
@@ -171,6 +172,50 @@ public:
             }
         }
         std::cout << std::endl;
+    }
+
+    // additional search helpers for GUI
+    bool find(const FIO& fio, Students_entry& res) const {
+        int key = calculateKey(fio);
+        int j = 0;
+        int index;
+        do {
+            index = hash(key, j, fullSize);
+            if (table[index].status == 0) {
+                return false;
+            }
+            if (table[index].status == 1 &&
+                table[index].record.fio.surname == fio.surname &&
+                table[index].record.fio.name == fio.name &&
+                table[index].record.fio.patronymic == fio.patronymic) {
+                res = table[index].record;
+                return true;
+            }
+            j++;
+        } while (j < fullSize);
+        return false;
+    }
+
+    std::vector<Students_entry> searchByInstrument(const std::string& instr) const {
+        std::vector<Students_entry> res;
+        for (int i = 0; i < fullSize; ++i) {
+            if (table[i].status == 1 && table[i].record.instrument == instr) {
+                res.push_back(table[i].record);
+            }
+        }
+        return res;
+    }
+
+    std::vector<Students_entry> searchByName(const std::string& name) const {
+        std::vector<Students_entry> res;
+        for (int i = 0; i < fullSize; ++i) {
+            if (table[i].status == 1) {
+                const auto& r = table[i].record;
+                if (r.fio.surname == name || r.fio.name == name || r.fio.patronymic == name)
+                    res.push_back(r);
+            }
+        }
+        return res;
     }
 
     //GUI

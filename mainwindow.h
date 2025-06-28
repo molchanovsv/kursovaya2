@@ -23,6 +23,8 @@ private slots:
     void addConcert();
     void removeConcert();
     void editConcert();
+    void searchStudent();
+    void searchConcert();
 
 private:
     Ui::MainWindow *ui;
