@@ -40,7 +40,14 @@ qt5_wrap_ui(UI_SOURCES src/gui/mainwindow.ui)
 
 add_executable(MusicGui src/main.cpp ${GUI_SOURCES} ${CORE_SOURCES} ${UI_SOURCES})
 
-target_include_directories(MusicGui PRIVATE src src/core src/gui)
+target_include_directories(MusicGui PRIVATE
+    src
+    src/core
+    src/core/models
+    src/core/containers
+    src/core/DataLoader
+    src/gui
+)
 
 target_link_libraries(MusicGui Qt5::Widgets Qt5::Core5Compat)
 
