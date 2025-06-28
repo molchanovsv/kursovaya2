@@ -8,6 +8,7 @@
 #include <QDialogButtonBox>
 #include <QLabel>
 #include <QSpinBox>
+#include <QSizePolicy>
 #include "mainwindow.h"
 #include "DataLoader.h"
 
@@ -21,6 +22,7 @@ int main(int argc, char *argv[])
     QLineEdit studEdit, concEdit;
     QSpinBox hashSizeSpin;
     hashSizeSpin.setMinimum(1);
+    hashSizeSpin.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     QPushButton browseStud("...");
     QPushButton browseConc("...");
     QWidget studRow, concRow;
