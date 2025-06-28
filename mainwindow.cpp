@@ -9,6 +9,7 @@
 #include <QDialogButtonBox>
 #include <QTreeWidget>
 #include <QBrush>
+#include <QRegularExpression>
 #include <vector>
 #include <sstream>
 #include "FIO.h"
@@ -50,7 +51,7 @@ void MainWindow::refreshTables()
             ui->studentsTable->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(st.fio.name)));
             ui->studentsTable->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(st.fio.patronymic)));
             ui->studentsTable->setItem(i, 3, new QTableWidgetItem(QString::fromStdString(st.instrument)));
-            ui->studentsTable->setItem(i, 4, new QTableWidgetItem(QString::fromStdString(st.teacher.surname + " " + st.teacher.initials)));
+            ui->studentsTable->setItem(i, 4, new QTableWidgetItem(QString::fromStdString(st.teacher.surname + " " + st.teacher.initials));
         }
     }
     ui->studentsTable->blockSignals(false);
@@ -240,6 +241,18 @@ bool MainWindow::studentDialog(Students_entry& out, const Students_entry* initia
     connect(&buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
     if (dialog.exec() == QDialog::Accepted) {
+        if (!validateFIO(surname.text(), name.text(), patronymic.text())) {
+            QMessageBox::warning(this, "Input Error", "Invalid FIO");
+            return false;
+        }
+        if (!validateInstrument(instrument.text())) {
+            QMessageBox::warning(this, "Input Error", "Invalid instrument");
+            return false;
+        }
+        if (!validateTeacher(teacherSurname.text(), teacherInitials.text())) {
+            QMessageBox::warning(this, "Input Error", "Invalid teacher initials");
+            return false;
+        }
         out.fio.surname = surname.text().toStdString();
         out.fio.name = name.text().toStdString();
         out.fio.patronymic = patronymic.text().toStdString();
@@ -289,6 +302,22 @@ bool MainWindow::concertDialog(Concerts_entry& out, const Concerts_entry* initia
     connect(&buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
     if (dialog.exec() == QDialog::Accepted) {
+        if (!validateFIO(surname.text(), name.text(), patronymic.text())) {
+            QMessageBox::warning(this, "Input Error", "Invalid FIO");
+            return false;
+        }
+        if (!validatePlay(play.text())) {
+            QMessageBox::warning(this, "Input Error", "Invalid play");
+            return false;
+        }
+        if (!validateHall(hall.text())) {
+            QMessageBox::warning(this, "Input Error", "Invalid hall");
+            return false;
+        }
+        if (!validateDate(date.text())) {
+            QMessageBox::warning(this, "Input Error", "Invalid date");
+            return false;
+        }
         out.fio.surname = surname.text().toStdString();
         out.fio.name = name.text().toStdString();
         out.fio.patronymic = patronymic.text().toStdString();
@@ -338,6 +367,10 @@ bool MainWindow::fioDialog(FIO& out, const FIO* initial, const QString& title)
     connect(&buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
     if (dialog.exec() == QDialog::Accepted) {
+        if (!validateFIO(surname.text(), name.text(), patronymic.text())) {
+            QMessageBox::warning(this, "Input Error", "Invalid FIO");
+            return false;
+        }
         out.surname = surname.text().toStdString();
         out.name = name.text().toStdString();
         out.patronymic = patronymic.text().toStdString();
@@ -379,6 +412,17 @@ void MainWindow::studentCellChanged(int row, int column)
         newEntry.teacher.surname == oldEntry.teacher.surname && newEntry.teacher.initials == oldEntry.teacher.initials)
         return;
 
+    if (!validateFIO(QString::fromStdString(newEntry.fio.surname),
+                     QString::fromStdString(newEntry.fio.name),
+                     QString::fromStdString(newEntry.fio.patronymic)) ||
+        !validateInstrument(QString::fromStdString(newEntry.instrument)) ||
+        !validateTeacher(QString::fromStdString(newEntry.teacher.surname),
+                         QString::fromStdString(newEntry.teacher.initials)) {
+        QMessageBox::warning(this, "Input Error", "Invalid student data");
+        refreshTables();
+        return;
+    }
+
     students->remove(oldEntry.fio);
     students->insert(newEntry);
     refreshTables();
@@ -411,9 +455,57 @@ void MainWindow::concertCellChanged(int row, int column)
         newEntry.hall == oldEntry.hall && newEntry.date == oldEntry.date)
         return;
 
+    if (!validateFIO(QString::fromStdString(newEntry.fio.surname),
+                     QString::fromStdString(newEntry.fio.name),
+                     QString::fromStdString(newEntry.fio.patronymic)) ||
+        !validatePlay(QString::fromStdString(newEntry.play)) ||
+        !validateHall(QString::fromStdString(newEntry.hall)) ||
+        !validateDate(QString::fromStdString(newEntry.date))) {
+        QMessageBox::warning(this, "Input Error", "Invalid concert data");
+        refreshTables();
+        return;
+    }
+
     concerts->remove(oldEntry.fio);
     concerts->insert(newEntry);
     refreshTables();
     ui->concertsTable->setCurrentCell(row, column);
+}
+
+bool MainWindow::validateFIO(const QString& s, const QString& n, const QString& p) const
+{
+    QRegularExpression word("^[А-ЯЁ][а-яё]+$");
+    return word.match(s).hasMatch() && word.match(n).hasMatch() && word.match(p).hasMatch();
+}
+
+bool MainWindow::validateInstrument(const QString& instrument) const
+{
+    QRegularExpression pat("^[А-Яа-яЁё]+( [А-Яа-яЁё]+)*$");
+    return pat.match(instrument).hasMatch();
+}
+
+bool MainWindow::validateTeacher(const QString& surname, const QString& initials) const
+{
+    QRegularExpression sPat("^[А-ЯЁ][а-яё]+$");
+    QRegularExpression iPat("^[А-ЯЁ]\.[А-ЯЁ]\.$");
+    return sPat.match(surname).hasMatch() && iPat.match(initials).hasMatch();
+}
+
+bool MainWindow::validatePlay(const QString& play) const
+{
+    QRegularExpression pat("^\".*\"$");
+    return pat.match(play).hasMatch();
+}
+
+bool MainWindow::validateHall(const QString& hall) const
+{
+    QRegularExpression pat("^[А-Яа-яЁё]+ зал$");
+    return pat.match(hall).hasMatch();
+}
+
+bool MainWindow::validateDate(const QString& date) const
+{
+    QRegularExpression pat("^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[0-2])\\.[0-9]{4}$");
+    return pat.match(date).hasMatch();
 }
 
