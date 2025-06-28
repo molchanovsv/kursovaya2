@@ -26,9 +26,19 @@
           </property>
           <widget class="QWidget" name="studentsPanel">
            <layout class="QVBoxLayout" name="verticalLayout">
-            <item>
-             <widget class="QTableWidget" name="studentsTable"/>
-        </item>
+              <item>
+               <widget class="QTableWidget" name="studentsTable">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+               </widget>
+               <property name="stretch">
+                <number>1</number>
+               </property>
+              </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
@@ -66,13 +76,23 @@
           <widget class="QWidget" name="concertsPanel">
            <layout class="QVBoxLayout" name="verticalLayout_2">
             <item>
-             <widget class="QSplitter" name="concertsSplitter">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+              <widget class="QSplitter" name="concertsSplitter">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <widget class="QTableWidget" name="concertsTable">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+               </widget>
+               <widget class="QTreeWidget" name="concertTree"/>
+              </widget>
+              <property name="stretch">
+               <number>1</number>
               </property>
-              <widget class="QTableWidget" name="concertsTable"/>
-              <widget class="QTreeWidget" name="concertTree"/>
-             </widget>
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -117,9 +137,19 @@
         <string>Отчёт</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_3">
-        <item>
-         <widget class="QTableWidget" name="reportTable"/>
-        </item>
+          <item>
+           <widget class="QTableWidget" name="reportTable">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+           <property name="stretch">
+            <number>1</number>
+           </property>
+          </item>
        </layout>
       </widget>
      </widget>

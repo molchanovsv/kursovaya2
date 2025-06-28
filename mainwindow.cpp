@@ -37,6 +37,9 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree, QWidget* 
     connect(ui->concertsTable, &QTableWidget::customContextMenuRequested, this, &MainWindow::concertContextMenu);
     ui->concertTree->setHeaderHidden(true);
     ui->reportTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->studentsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->concertsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->reportTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->mainSplitter->setStretchFactor(0, 1);
     ui->mainSplitter->setStretchFactor(1, 1);
     ui->concertsSplitter->setStretchFactor(0, 1);
@@ -62,12 +65,21 @@ void MainWindow::refreshTables()
     for (int i = 0; i < students->getFullSize(); ++i) {
         if (students->isOccupied(i)) {
             const auto& st = students->getEntry(i);
-            ui->studentsTable->setVerticalHeaderItem(row, new QTableWidgetItem(QString::number(i)));
-            ui->studentsTable->setItem(row, 0, new QTableWidgetItem(QString::fromStdString(st.fio.surname)));
-            ui->studentsTable->setItem(row, 1, new QTableWidgetItem(QString::fromStdString(st.fio.name)));
-            ui->studentsTable->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(st.fio.patronymic)));
-            ui->studentsTable->setItem(row, 3, new QTableWidgetItem(QString::fromStdString(st.instrument)));
-            ui->studentsTable->setItem(row, 4, new QTableWidgetItem(QString::fromStdString(st.teacher.surname + " " + st.teacher.initials)));
+            QTableWidgetItem* vh = new QTableWidgetItem(QString::number(i));
+            vh->setTextAlignment(Qt::AlignCenter);
+            ui->studentsTable->setVerticalHeaderItem(row, vh);
+
+            auto makeItem = [](const QString& t) {
+                QTableWidgetItem* it = new QTableWidgetItem(t);
+                it->setTextAlignment(Qt::AlignCenter);
+                return it;
+            };
+
+            ui->studentsTable->setItem(row, 0, makeItem(QString::fromStdString(st.fio.surname)));
+            ui->studentsTable->setItem(row, 1, makeItem(QString::fromStdString(st.fio.name)));
+            ui->studentsTable->setItem(row, 2, makeItem(QString::fromStdString(st.fio.patronymic)));
+            ui->studentsTable->setItem(row, 3, makeItem(QString::fromStdString(st.instrument)));
+            ui->studentsTable->setItem(row, 4, makeItem(QString::fromStdString(st.teacher.surname + " " + st.teacher.initials)));
             studentRowMap.push_back(i);
             ++row;
         }
@@ -86,12 +98,18 @@ void MainWindow::refreshTables()
     ui->concertsTable->setRowCount(count);
     for (int i = 0; i < count; ++i) {
         const auto& e = list[i];
-        ui->concertsTable->setItem(i, 0, new QTableWidgetItem(QString::fromStdString(e.fio.surname)));
-        ui->concertsTable->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(e.fio.name)));
-        ui->concertsTable->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(e.fio.patronymic)));
-        ui->concertsTable->setItem(i, 3, new QTableWidgetItem(QString::fromStdString(e.play)));
-        ui->concertsTable->setItem(i, 4, new QTableWidgetItem(QString::fromStdString(e.hall)));
-        ui->concertsTable->setItem(i, 5, new QTableWidgetItem(QString::fromStdString(e.date)));
+        auto makeItem = [](const QString& t) {
+            QTableWidgetItem* it = new QTableWidgetItem(t);
+            it->setTextAlignment(Qt::AlignCenter);
+            return it;
+        };
+
+        ui->concertsTable->setItem(i, 0, makeItem(QString::fromStdString(e.fio.surname)));
+        ui->concertsTable->setItem(i, 1, makeItem(QString::fromStdString(e.fio.name)));
+        ui->concertsTable->setItem(i, 2, makeItem(QString::fromStdString(e.fio.patronymic)));
+        ui->concertsTable->setItem(i, 3, makeItem(QString::fromStdString(e.play)));
+        ui->concertsTable->setItem(i, 4, makeItem(QString::fromStdString(e.hall)));
+        ui->concertsTable->setItem(i, 5, makeItem(QString::fromStdString(e.date)));
     }
     ui->concertsTable->blockSignals(false);
     updateConcertTree();
@@ -395,6 +413,7 @@ void MainWindow::updateReport()
         for (int j = 0; j < 8; ++j) {
             QTableWidgetItem* item = new QTableWidgetItem(rows[i][j]);
             item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+            item->setTextAlignment(Qt::AlignCenter);
             ui->reportTable->setItem(i, j, item);
         }
     }
