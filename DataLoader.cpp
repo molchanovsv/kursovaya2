@@ -60,8 +60,12 @@ namespace DataLoader {
 
         while (file >> line) {
             entry.fio.surname = decodeCp1251(line);
-            if (!(file >> line)) break; entry.fio.name = decodeCp1251(line);
-            if (!(file >> line)) break; entry.fio.patronymic = decodeCp1251(line);
+            if (!(file >> line))
+                break;
+            entry.fio.name = decodeCp1251(line);
+            if (!(file >> line))
+                break;
+            entry.fio.patronymic = decodeCp1251(line);
             // Чтение пьесы (в кавычках)
             file >> std::ws; // Пропустить пробелы
             std::getline(file, line, '"'); // Пропустить всё до первой кавычки
