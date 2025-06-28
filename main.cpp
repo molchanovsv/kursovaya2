@@ -6,6 +6,7 @@
 #include <QPushButton>
 #include <QFileDialog>
 #include <QDialogButtonBox>
+#include <QLabel>
 #include "mainwindow.h"
 #include "DataLoader.h"
 
@@ -29,6 +30,9 @@ int main(int argc, char *argv[])
     concRow.setLayout(&concLay);
     layout.addRow("Студенты", &studRow);
     layout.addRow("Концерты", &concRow);
+    QLabel errorLabel;
+    errorLabel.setStyleSheet("color:red");
+    layout.addRow(&errorLabel);
     QDialogButtonBox buttons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     layout.addRow(&buttons);
     QObject::connect(&browseStud, &QPushButton::clicked, [&]() {
@@ -39,6 +43,31 @@ int main(int argc, char *argv[])
         QString f = QFileDialog::getOpenFileName(&fileDialog, "Файл концертов", "", "Text files (*.txt)");
         if (!f.isEmpty()) concEdit.setText(f);
     });
+
+    auto validate = [&]() {
+        QString msg;
+        bool ok = true;
+        std::string err;
+        if (studEdit.text().isEmpty()) {
+            msg = "Укажите файл студентов";
+            ok = false;
+        } else if (!DataLoader::validateStudentsFile(studEdit.text().toStdString(), err)) {
+            msg = QString::fromStdString(err);
+            ok = false;
+        } else if (concEdit.text().isEmpty()) {
+            msg = "Укажите файл концертов";
+            ok = false;
+        } else if (!DataLoader::validateConcertsFile(concEdit.text().toStdString(), err)) {
+            msg = QString::fromStdString(err);
+            ok = false;
+        }
+        buttons.button(QDialogButtonBox::Ok)->setEnabled(ok);
+        errorLabel.setText(msg);
+    };
+    QObject::connect(&studEdit, &QLineEdit::textChanged, validate);
+    QObject::connect(&concEdit, &QLineEdit::textChanged, validate);
+    validate();
+
     QObject::connect(&buttons, &QDialogButtonBox::accepted, &fileDialog, &QDialog::accept);
     QObject::connect(&buttons, &QDialogButtonBox::rejected, &fileDialog, &QDialog::reject);
     if (fileDialog.exec() != QDialog::Accepted)

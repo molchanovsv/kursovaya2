@@ -109,4 +109,34 @@ namespace DataLoader {
         qDebug() << "Loaded" << entries.size() << "concerts";
         return entries;
     }
+
+    bool validateStudentsFile(const std::string& filename, std::string& error) {
+        int count = 0;
+        Students_entry* test = loadStudents(1, count, filename);
+        delete[] test;
+        if (count == 0) {
+            std::ifstream f(filename);
+            if (!f.is_open()) {
+                error = "Не удалось открыть файл студентов";
+            } else {
+                error = "Файл студентов пуст или имеет неверный формат";
+            }
+            return false;
+        }
+        return true;
+    }
+
+    bool validateConcertsFile(const std::string& filename, std::string& error) {
+        auto data = loadConcertsData(filename);
+        if (data.empty()) {
+            std::ifstream f(filename);
+            if (!f.is_open()) {
+                error = "Не удалось открыть файл концертов";
+            } else {
+                error = "Файл концертов пуст или имеет неверный формат";
+            }
+            return false;
+        }
+        return true;
+    }
 }
