@@ -68,8 +68,9 @@ void MainWindow::refreshTables()
     QStringList headers;
     headers << "FIO" << "Play" << "Hall" << "Date";
     ui->concertsTable->setHorizontalHeaderLabels(headers);
-    ui->concertsTable->setRowCount(static_cast<int>(list.size()));
-    for (int i = 0; i < list.size(); ++i) {
+    int count = static_cast<int>(list.size());
+    ui->concertsTable->setRowCount(count);
+    for (int i = 0; i < count; ++i) {
         const auto& e = list[i];
         QString fio = QString::fromStdString(e.fio.surname + " " + e.fio.name + " " + e.fio.patronymic);
         ui->concertsTable->setItem(i, 0, new QTableWidgetItem(fio));
@@ -140,7 +141,7 @@ void MainWindow::editConcert()
     int row = ui->concertsTable->currentRow();
     std::vector<Concerts_entry> list;
     concerts->toVector(list);
-    if (row < 0 || row >= list.size()) {
+    if (row < 0 || row >= static_cast<int>(list.size())) {
         QMessageBox::warning(this, "Edit Concert", "Select a concert in the table.");
         return;
     }
@@ -340,7 +341,7 @@ void MainWindow::updateConcertTree()
     concerts->toVector(list);
     FIO* highlight = nullptr;
     FIO temp;
-    if (row >= 0 && row < list.size()) {
+    if (row >= 0 && row < static_cast<int>(list.size())) {
         temp = list[row].fio;
         highlight = &temp;
     }
