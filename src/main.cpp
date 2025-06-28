@@ -8,7 +8,7 @@
 #include <QDialogButtonBox>
 #include <QLabel>
 #include <QSpinBox>
-#include "mainwindow.h"
+#include "MainWindow.h"
 #include "DataLoader.h"
 
 int main(int argc, char *argv[])
