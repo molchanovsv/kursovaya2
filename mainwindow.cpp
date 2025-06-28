@@ -27,9 +27,7 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree, QWidget* 
     connect(ui->removeConcertButton, &QPushButton::clicked, this, &MainWindow::removeConcert);
     connect(ui->editConcertButton, &QPushButton::clicked, this, &MainWindow::editConcert);
     connect(ui->searchConcertButton, &QPushButton::clicked, this, &MainWindow::searchConcert);
-    connect(ui->resetConcertFilterButton, &QPushButton::clicked, this, &MainWindow::resetConcertFilter);
     connect(ui->searchStudentButton, &QPushButton::clicked, this, &MainWindow::searchStudent);
-    connect(ui->resetStudentFilterButton, &QPushButton::clicked, this, &MainWindow::resetStudentFilter);
     connect(ui->concertsTable, &QTableWidget::itemSelectionChanged, this, &MainWindow::updateConcertTree);
     connect(ui->studentsTable, &QTableWidget::cellChanged, this, &MainWindow::studentCellChanged);
     connect(ui->concertsTable, &QTableWidget::cellChanged, this, &MainWindow::concertCellChanged);
@@ -43,14 +41,6 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree, QWidget* 
     connect(ui->instrumentFilterCheck, &QCheckBox::toggled, this, &MainWindow::updateReport);
     connect(ui->hallFilterCheck, &QCheckBox::toggled, this, &MainWindow::updateReport);
     connect(ui->dateFilterCheck, &QCheckBox::toggled, this, &MainWindow::updateReport);
-    connect(ui->nameFilterEdit, &QLineEdit::textChanged, this, &MainWindow::refreshTables);
-    connect(ui->instrFilterEdit, &QLineEdit::textChanged, this, &MainWindow::refreshTables);
-    connect(ui->nameFilterCheck, &QCheckBox::toggled, this, &MainWindow::refreshTables);
-    connect(ui->instrFilterCheck, &QCheckBox::toggled, this, &MainWindow::refreshTables);
-    connect(ui->concertHallFilterEdit, &QLineEdit::textChanged, this, &MainWindow::refreshTables);
-    connect(ui->concertDateFilterEdit, &QDateEdit::dateChanged, this, &MainWindow::refreshTables);
-    connect(ui->concertHallFilterCheck, &QCheckBox::toggled, this, &MainWindow::refreshTables);
-    connect(ui->concertDateFilterCheck, &QCheckBox::toggled, this, &MainWindow::refreshTables);
     ui->concertTree->setHeaderHidden(true);
     ui->reportTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->studentsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -74,10 +64,6 @@ void MainWindow::refreshTables()
     QStringList studentHeaders;
     studentHeaders << "Фамилия" << "Имя" << "Отчество" << "Инструмент" << "Учитель";
     ui->studentsTable->setHorizontalHeaderLabels(studentHeaders);
-    QString nameFilter = ui->nameFilterEdit->text();
-    bool useName = ui->nameFilterCheck->isChecked() && !nameFilter.isEmpty();
-    QString instrFilter = ui->instrFilterEdit->text();
-    bool useInstr = ui->instrFilterCheck->isChecked() && !instrFilter.isEmpty();
     bool useSearch = studentFilterActive;
     studentRowMap.clear();
     int row = 0;
@@ -90,12 +76,6 @@ void MainWindow::refreshTables()
             QString instr = QString::fromStdString(st.instrument);
             QString teacher =
                 QString::fromStdString(st.teacher.surname + " " + st.teacher.initials);
-            if (useName && !sur.contains(nameFilter, Qt::CaseInsensitive) &&
-                !nam.contains(nameFilter, Qt::CaseInsensitive) &&
-                !pat.contains(nameFilter, Qt::CaseInsensitive))
-                continue;
-            if (useInstr && !instr.contains(instrFilter, Qt::CaseInsensitive))
-                continue;
             if (useSearch) {
                 if (!sSurname.isEmpty() && !sur.contains(sSurname, Qt::CaseInsensitive))
                     continue;
@@ -132,10 +112,6 @@ void MainWindow::refreshTables()
 
     std::vector<Concerts_entry> list;
     concerts->toVector(list);
-    QString hallFilter = ui->concertHallFilterEdit->text();
-    bool useHall = ui->concertHallFilterCheck->isChecked() && !hallFilter.isEmpty();
-    QDate dFilter = ui->concertDateFilterEdit->date();
-    bool useDate = ui->concertDateFilterCheck->isChecked();
     bool useSearchC = concertFilterActive;
     concertList.clear();
     for (const auto& e : list) {
@@ -145,13 +121,6 @@ void MainWindow::refreshTables()
         QString play = QString::fromStdString(e.play);
         QString hall = QString::fromStdString(e.hall);
         QString date = QString::fromStdString(e.date);
-        if (useHall && !hall.contains(hallFilter, Qt::CaseInsensitive))
-            continue;
-        if (useDate) {
-            QDate dt = QDate::fromString(date, "dd.MM.yyyy");
-            if (!dt.isValid() || dt != dFilter)
-                continue;
-        }
         if (useSearchC) {
             if (!cSurname.isEmpty() && !sur.contains(cSurname, Qt::CaseInsensitive))
                 continue;
@@ -293,8 +262,9 @@ void MainWindow::searchStudent()
         sPatronymic = pat.text();
         sInstr = instr.text();
         sTeacher = teacher.text();
-        studentFilterActive = true;
-        ui->resetStudentFilterButton->setVisible(true);
+        studentFilterActive = !(sSurname.isEmpty() && sName.isEmpty() &&
+                               sPatronymic.isEmpty() && sInstr.isEmpty() &&
+                               sTeacher.isEmpty());
         refreshTables();
     }
 }
@@ -328,36 +298,12 @@ void MainWindow::searchConcert()
         cPlay = play.text();
         cHall = hall.text();
         cDate = date.date().isNull() ? QString() : date.date().toString("dd.MM.yyyy");
-        concertFilterActive = true;
-        ui->resetConcertFilterButton->setVisible(true);
+        concertFilterActive = !(cSurname.isEmpty() && cName.isEmpty() && cPatronymic.isEmpty() &&
+                               cPlay.isEmpty() && cHall.isEmpty() && cDate.isEmpty());
         refreshTables();
     }
 }
 
-void MainWindow::resetStudentFilter()
-{
-    studentFilterActive = false;
-    sSurname.clear();
-    sName.clear();
-    sPatronymic.clear();
-    sInstr.clear();
-    sTeacher.clear();
-    ui->resetStudentFilterButton->setVisible(false);
-    refreshTables();
-}
-
-void MainWindow::resetConcertFilter()
-{
-    concertFilterActive = false;
-    cSurname.clear();
-    cName.clear();
-    cPatronymic.clear();
-    cPlay.clear();
-    cHall.clear();
-    cDate.clear();
-    ui->resetConcertFilterButton->setVisible(false);
-    refreshTables();
-}
 
 bool MainWindow::studentDialog(Students_entry& out, const Students_entry* initial)
 {

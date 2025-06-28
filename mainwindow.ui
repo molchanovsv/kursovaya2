@@ -59,30 +59,6 @@
             </property>
            </widget>
           </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="studentFilterLayout">
-          <item>
-           <widget class="QCheckBox" name="nameFilterCheck">
-            <property name="text">
-             <string>ФИО</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="nameFilterEdit"/>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="instrFilterCheck">
-            <property name="text">
-             <string>Инструмент</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="instrFilterEdit"/>
-          </item>
           <item>
            <widget class="QPushButton" name="searchStudentButton">
             <property name="text">
@@ -90,18 +66,8 @@
             </property>
            </widget>
           </item>
-          <item>
-           <widget class="QPushButton" name="resetStudentFilterButton">
-            <property name="text">
-             <string>Сбросить фильтр</string>
-            </property>
-            <property name="visible">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-        </layout>
-       </item>
+         </layout>
+        </item>
        </layout>
       </widget>
           <widget class="QWidget" name="concertsPanel">
@@ -145,54 +111,13 @@
             </property>
            </widget>
           </item>
-             </layout>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="concertFilterLayout">
-              <item>
-               <widget class="QCheckBox" name="concertHallFilterCheck">
-                <property name="text">
-                 <string>Зал</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLineEdit" name="concertHallFilterEdit"/>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="concertDateFilterCheck">
-                <property name="text">
-                 <string>Дата</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QDateEdit" name="concertDateFilterEdit">
-                <property name="calendarPopup">
-                 <bool>true</bool>
-                </property>
-                <property name="displayFormat">
-                 <string>dd.MM.yyyy</string>
-                </property>
-               </widget>
-              </item>
-               <item>
-               <widget class="QPushButton" name="searchConcertButton">
-                <property name="text">
-                 <string>Поиск</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="resetConcertFilterButton">
-                <property name="text">
-                 <string>Сбросить фильтр</string>
-                </property>
-                <property name="visible">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
+          <item>
+           <widget class="QPushButton" name="searchConcertButton">
+            <property name="text">
+             <string>Поиск</string>
+            </property>
+           </widget>
+          </item>
              </layout>
             </item>
            </layout>
