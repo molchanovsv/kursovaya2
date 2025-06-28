@@ -138,36 +138,36 @@ public:
             steps++;
             index = hash(key, j, fullSize);
             if (table[index].status == 0) {
-                std::cout << "Çàïèñü ñ ÔÈÎ " << fio << " íå íàéäåíà\n";
+                std::cout << "Ã‡Ã Ã¯Ã¨Ã±Ã¼ Ã± Ã”ÃˆÃŽ " << fio << " Ã­Ã¥ Ã­Ã Ã©Ã¤Ã¥Ã­Ã \n";
                 return;
             }
             if (table[index].status == 1 &&
                 table[index].record.fio.surname == fio.surname &&
                 table[index].record.fio.name == fio.name &&
                 table[index].record.fio.patronymic == fio.patronymic) {
-                std::cout << "Íàéäåíà çàïèñü:\n";
-                std::cout << "Èíäåêñ " << index << ": " << table[index].record << "\n\n";
+                std::cout << "ÃÃ Ã©Ã¤Ã¥Ã­Ã  Ã§Ã Ã¯Ã¨Ã±Ã¼:\n";
+                std::cout << "ÃˆÃ­Ã¤Ã¥ÃªÃ± " << index << ": " << table[index].record << "\n\n";
                 return;
             }
             j++;
         } while (j < fullSize);
 
-        std::cout << "Çàïèñü ñ ÔÈÎ " << fio << " íå íàéäåíà\n\n";
+        std::cout << "Ã‡Ã Ã¯Ã¨Ã±Ã¼ Ã± Ã”ÃˆÃŽ " << fio << " Ã­Ã¥ Ã­Ã Ã©Ã¤Ã¥Ã­Ã \n\n";
         return;
     }
 
     void print() const {
-        std::cout << "Õýø-òàáëèöà (ðàçìåð: " << size
-            << ", êîýôôèöèåíò çàãðóçêè: " << static_cast<double>(size) / fullSize << ")\n";
+        std::cout << "Ã•Ã½Ã¸-Ã²Ã Ã¡Ã«Ã¨Ã¶Ã  (Ã°Ã Ã§Ã¬Ã¥Ã°: " << size
+            << ", ÃªÃ®Ã½Ã´Ã´Ã¨Ã¶Ã¨Ã¥Ã­Ã² Ã§Ã Ã£Ã°Ã³Ã§ÃªÃ¨: " << static_cast<double>(size) / fullSize << ")\n";
         for (int i = 0; i < fullSize; i++) {
             if (table[i].status == 1) {
-                std::cout << "Èíäåêñ " << i << ": " << table[i].record << std::endl;
+                std::cout << "ÃˆÃ­Ã¤Ã¥ÃªÃ± " << i << ": " << table[i].record << std::endl;
             }
             else if (table[i].status == 2) {
-                std::cout << "Èíäåêñ " << i << ": ÓÄÀËÅÍÎ" << std::endl;
+                std::cout << "ÃˆÃ­Ã¤Ã¥ÃªÃ± " << i << ": Ã“Ã„Ã€Ã‹Ã…ÃÃŽ" << std::endl;
             }
             else if (table[i].status == 0) {
-                std::cout << "Èíäåêñ " << i << ": ÏÓÑÒÎ" << std::endl;
+                std::cout << "ÃˆÃ­Ã¤Ã¥ÃªÃ± " << i << ": ÃÃ“Ã‘Ã’ÃŽ" << std::endl;
             }
         }
         std::cout << std::endl;
@@ -180,5 +180,12 @@ public:
     const Students_entry& getEntry(int index) const { return table[index].record; }
     std::string entryToString(int index) const;
 };
+
+inline std::string HashTable::entryToString(int index) const {
+    const Students_entry& st = table[index].record;
+    return st.fio.surname + " " + st.fio.name + " " + st.fio.patronymic +
+           " - " + st.instrument + " (" + st.teacher.surname + " " +
+           st.teacher.initials + ")";
+}
 
 #endif
