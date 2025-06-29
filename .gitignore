@@ -1,3 +1,4 @@
+# Visual Studio artifacts
 .vs/
 *.user
 *.suo
@@ -14,4 +15,13 @@
 *.aps
 *.bak
 *.db
-Music_school/
+
+# Build directories
+build/
+
+# Qt Creator and qmake temporary files
+*.pro.user
+*.pro.user.*
+*.qrc.depends
+*.qmake.stash
+*.qmake.cache
