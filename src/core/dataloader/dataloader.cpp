@@ -1,6 +1,5 @@
 #include "dataloader.h"
 #include <fstream>
-#include <iostream>
 #include "fio.h"
 #include <QTextCodec>
 #include <QDebug>
@@ -54,7 +53,7 @@ namespace DataLoader {
         qDebug() << "Loading students from" << QString::fromStdString(fname);
         std::ifstream input(fname);
         if (!input.is_open()) {
-            std::cerr << "Не удалось открыть файл " << fname << std::endl;
+            qWarning() << "Не удалось открыть файл" << QString::fromStdString(fname);
             count = 0;
             return new Students_entry[n];
         }
@@ -99,7 +98,7 @@ namespace DataLoader {
         std::ifstream file(filename);
 
         if (!file.is_open()) {
-            std::cerr << "Не удалось открыть файл " << filename << std::endl;
+            qWarning() << "Не удалось открыть файл" << QString::fromStdString(filename);
             return entries;
         }
 

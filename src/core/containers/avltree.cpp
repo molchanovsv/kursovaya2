@@ -1,6 +1,5 @@
 #include "avltree.h"
 #include <algorithm>
-#include <iostream>
 #include <vector>
 
 AVLTree::Node::Node(const Concerts_entry& entry)
@@ -127,19 +126,6 @@ void AVLTree::remove(const FIO& fio) {
 	root = remove(root, fio);
 }
 
-void AVLTree::print(Node* node, std::ostream& os, int level) const {
-	if (node) {
-		print(node->right, os, level + 1);
-		for (int i = 0; i < level; i++) os << "    ";
-		os << node->data.fio << std::endl;
-		print(node->left, os, level + 1);
-	}
-}
-
-void AVLTree::print(std::ostream& os) const {
-        print(root, os);
-        os << std::endl;
-}
 
 void AVLTree::toVector(Node* node, std::vector<Concerts_entry>& vec) const {
     if (!node) return;

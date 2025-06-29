@@ -17,9 +17,6 @@ set(CORE_SOURCES
     src/core/containers/avltree.cpp
     src/core/containers/hashtable.cpp
     src/core/dataloader/dataloader.cpp
-    src/core/models/fio.cpp
-    src/core/models/student_entry.cpp
-    src/core/models/teacher.cpp
 )
 
 set(HEADERS

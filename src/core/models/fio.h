@@ -2,7 +2,6 @@
 #define FIO_H
 
 #include <string>
-#include <iostream>
 
 struct FIO {
     std::string surname;
@@ -22,6 +21,5 @@ struct FIO {
 	}
 };
 
-std::ostream& operator<<(std::ostream& os, const FIO& fio);
 
 #endif
