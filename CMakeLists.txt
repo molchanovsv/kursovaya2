@@ -15,6 +15,7 @@ set(GUI_SOURCES
 
 set(CORE_SOURCES
     src/core/containers/AVLTree.cpp
+    src/core/containers/HashTable.cpp
     src/core/DataLoader/DataLoader.cpp
     src/core/models/FIO.cpp
     src/core/models/StudentEntry.cpp
@@ -23,10 +24,6 @@ set(CORE_SOURCES
 
 set(HEADERS
     src/gui/MainWindow.h
-    src/gui/StudentActions.h
-    src/gui/ConcertActions.h
-    src/gui/Dialogs.h
-    src/gui/Export.h
     src/core/containers/AVLTree.h
     src/core/containers/HashTable.h
     src/core/DataLoader/DataLoader.h

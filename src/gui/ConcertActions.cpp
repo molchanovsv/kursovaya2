@@ -1,4 +1,4 @@
-#include "ConcertActions.h"
+#include "MainWindow.h"
 #include "ui_mainwindow.h"
 #include <QDialog>
 #include <QFormLayout>
