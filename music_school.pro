@@ -7,6 +7,7 @@ HEADERS += src/gui/mainwindow.h \
     src/core/containers/avltree.h src/core/containers/hashtable.h src/core/dataloader/dataloader.h \
     src/core/models/fio.h src/core/models/student_entry.h src/core/models/teacher.h src/core/models/concert_entry.h
 FORMS += src/gui/mainwindow.ui
+RESOURCES += resources/icons.qrc
 
 # Include directories for headers
 INCLUDEPATH += \
