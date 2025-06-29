@@ -11,6 +11,7 @@
 #include "mainwindow.h"
 #include "dataloader.h"
 #include <QIcon>
+#include <memory>
 
 int main(int argc, char *argv[])
 {
@@ -90,23 +91,21 @@ int main(int argc, char *argv[])
     std::string err;
     DataLoader::validateStudentsFile(studEdit.text().toStdString(), count, err);
     Students_entry* records = DataLoader::loadStudents(count, count, studEdit.text().toStdString());
-    auto *table = new HashTable(hashSizeSpin.value());
+    auto table = std::make_unique<HashTable>(hashSizeSpin.value());
     for(int i=0;i<count;++i)
         table->insert(records[i]);
 
-    auto *tree = new AVLTree();
+    auto tree = std::make_unique<AVLTree>();
     auto concerts = DataLoader::loadConcertsData(concEdit.text().toStdString().empty() ? "concerts.txt" : concEdit.text().toStdString());
     for(const auto& c : concerts)
         tree->insert(c);
 
-    MainWindow w(table, tree, studEdit.text(), concEdit.text());
+    MainWindow w(table.get(), tree.get(), studEdit.text(), concEdit.text());
     w.setWindowTitle("База Данных Музыкальной Школы");
     w.setWindowIcon(QIcon(":/app.ico"));
     w.show();
     int res = app.exec();
 
     delete[] records;
-    delete table;
-    delete tree;
     return res;
 }
