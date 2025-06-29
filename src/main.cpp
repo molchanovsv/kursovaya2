@@ -90,9 +90,9 @@ int main(int argc, char *argv[])
     int count = 0;
     std::string err;
     DataLoader::validateStudentsFile(studEdit.text().toStdString(), count, err);
-    Students_entry* records = DataLoader::loadStudents(count, count, studEdit.text().toStdString());
+    auto records = DataLoader::loadStudents(count, count, studEdit.text().toStdString());
     auto table = std::make_unique<HashTable>(hashSizeSpin.value());
-    for(int i=0;i<count;++i)
+    for(int i=0;i<count && i < static_cast<int>(records.size()); ++i)
         table->insert(records[i]);
 
     auto tree = std::make_unique<AVLTree>();
@@ -106,6 +106,5 @@ int main(int argc, char *argv[])
     w.show();
     int res = app.exec();
 
-    delete[] records;
     return res;
 }
