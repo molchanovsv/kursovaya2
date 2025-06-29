@@ -1,8 +1,8 @@
 #ifndef STUDENTS_ENTRY_H
 #define STUDENTS_ENTRY_H
 
-#include "FIO.h"
-#include "Teacher.h"
+#include "fio.h"
+#include "teacher.h"
 #include <string>
 #include <iostream>
 

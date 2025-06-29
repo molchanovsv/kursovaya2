@@ -1,7 +1,7 @@
 #ifndef HASHTABLE_H
 #define HASHTABLE_H
 
-#include "StudentEntry.h"
+#include "student_entry.h"
 #include <string>
 #include <vector>
 #include <ostream>

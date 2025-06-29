@@ -1,4 +1,4 @@
-#include "HashTable.h"
+#include "hashtable.h"
 #include <iostream>
 
 HashTable::HashTable(int initSize)

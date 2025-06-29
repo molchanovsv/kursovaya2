@@ -1,4 +1,4 @@
-#include "StudentEntry.h"
+#include "student_entry.h"
 
 std::ostream& operator<<(std::ostream& os, const Students_entry& entry) {
 	os << "ÔÈÎ: " << entry.fio << ", "

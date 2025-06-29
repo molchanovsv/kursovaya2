@@ -1,7 +1,7 @@
 #ifndef AVLTREE_H
 #define AVLTREE_H
 
-#include "ConcertEntry.h"
+#include "concert_entry.h"
 #include <ostream>
 #include <vector>
 #include <QTreeWidget>
