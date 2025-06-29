@@ -31,8 +31,9 @@ set(HEADERS
 )
 
 qt5_wrap_ui(UI_SOURCES src/gui/mainwindow.ui)
+qt5_add_resources(ICON_RESOURCES resources/icons.qrc)
 
-add_executable(MusicGui src/main.cpp ${GUI_SOURCES} ${CORE_SOURCES} ${UI_SOURCES})
+add_executable(MusicGui src/main.cpp ${GUI_SOURCES} ${CORE_SOURCES} ${UI_SOURCES} ${ICON_RESOURCES})
 
 target_include_directories(MusicGui PRIVATE
     src

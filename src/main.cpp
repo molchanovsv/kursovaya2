@@ -10,10 +10,13 @@
 #include <QSpinBox>
 #include "mainwindow.h"
 #include "dataloader.h"
+#include <QIcon>
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+    app.setApplicationName("База Данных Музыкальной Школы");
+    app.setWindowIcon(QIcon(":/app.ico"));
 
     QDialog fileDialog;
     fileDialog.setWindowTitle("Выбор файлов");
@@ -97,6 +100,8 @@ int main(int argc, char *argv[])
         tree->insert(c);
 
     MainWindow w(table, tree, studEdit.text(), concEdit.text());
+    w.setWindowTitle("База Данных Музыкальной Школы");
+    w.setWindowIcon(QIcon(":/app.ico"));
     w.show();
     int res = app.exec();
 
