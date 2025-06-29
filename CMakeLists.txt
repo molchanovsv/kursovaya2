@@ -6,34 +6,28 @@ set(CMAKE_CXX_STANDARD 17)
 find_package(Qt5 COMPONENTS Widgets Core5Compat REQUIRED)
 
 set(GUI_SOURCES
-    src/gui/MainWindow.cpp
-    src/gui/StudentActions.cpp
-    src/gui/ConcertActions.cpp
-    src/gui/Dialogs.cpp
-    src/gui/Export.cpp
+    src/gui/mainwindow.cpp
+    src/gui/student_actions.cpp
+    src/gui/concert_actions.cpp
+    src/gui/dialogs.cpp
+    src/gui/export.cpp
 )
 
 set(CORE_SOURCES
-    src/core/containers/AVLTree.cpp
-    src/core/DataLoader/DataLoader.cpp
-    src/core/models/FIO.cpp
-    src/core/models/StudentEntry.cpp
-    src/core/models/Teacher.cpp
+    src/core/containers/avltree.cpp
+    src/core/containers/hashtable.cpp
+    src/core/dataloader/dataloader.cpp
 )
 
 set(HEADERS
-    src/gui/MainWindow.h
-    src/gui/StudentActions.h
-    src/gui/ConcertActions.h
-    src/gui/Dialogs.h
-    src/gui/Export.h
-    src/core/containers/AVLTree.h
-    src/core/containers/HashTable.h
-    src/core/DataLoader/DataLoader.h
-    src/core/models/FIO.h
-    src/core/models/StudentEntry.h
-    src/core/models/Teacher.h
-    src/core/models/ConcertEntry.h
+    src/gui/mainwindow.h
+    src/core/containers/avltree.h
+    src/core/containers/hashtable.h
+    src/core/dataloader/dataloader.h
+    src/core/models/fio.h
+    src/core/models/student_entry.h
+    src/core/models/teacher.h
+    src/core/models/concert_entry.h
 )
 
 qt5_wrap_ui(UI_SOURCES src/gui/mainwindow.ui)
@@ -45,7 +39,7 @@ target_include_directories(MusicGui PRIVATE
     src/core
     src/core/models
     src/core/containers
-    src/core/DataLoader
+    src/core/dataloader
     src/gui
 )
 

@@ -1,8 +1,8 @@
 #ifndef DATALOADER_H
 #define DATALOADER_H
 
-#include "StudentEntry.h"
-#include "ConcertEntry.h"
+#include "student_entry.h"
+#include "concert_entry.h"
 #include <vector>
 #include <string>
 

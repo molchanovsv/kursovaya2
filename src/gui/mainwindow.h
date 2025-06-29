@@ -2,8 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "HashTable.h"
-#include "AVLTree.h"
+#include "hashtable.h"
+#include "avltree.h"
 #include <vector>
 #include <QString>
 
