@@ -4,8 +4,8 @@
 #include <QLineEdit>
 #include <QLabel>
 #include <QDialogButtonBox>
-#include <QRegularExpression>
 #include <QMessageBox>
+#include "validators.h"
 
 
 
@@ -181,37 +181,31 @@ bool MainWindow::fioDialog(FIO& out, const FIO* initial, const QString& title)
 }
 bool MainWindow::validateWord(const QString& word) const
 {
-    QRegularExpression pat("^[А-ЯЁ][а-яё]+$");
-    return pat.match(word).hasMatch();
+    return wordValid(word);
 }
 
 bool MainWindow::validateFIO(const QString& s, const QString& n, const QString& p) const
 {
-    return validateWord(s) && validateWord(n) && validateWord(p);
+    return fioValid(s, n, p);
 }
 
 bool MainWindow::validateInstrument(const QString& instrument) const
 {
-    QRegularExpression pat("^[А-Яа-яЁё]+( [А-Яа-яЁё]+)*$");
-    return pat.match(instrument).hasMatch();
+    return instrumentValid(instrument);
 }
 
 bool MainWindow::validateTeacher(const QString& surname, const QString& initials) const
 {
-    QRegularExpression sPat("^[А-ЯЁ][а-яё]+$");
-    QRegularExpression iPat("^[А-ЯЁ]\\.[А-ЯЁ]\\.$");
-    return sPat.match(surname).hasMatch() && iPat.match(initials).hasMatch();
+    return teacherValid(surname, initials);
 }
 
 
 bool MainWindow::validateHall(const QString& hall) const
 {
-    QRegularExpression pat("^[А-Яа-яЁё]+ зал$");
-    return pat.match(hall).hasMatch();
+    return hallValid(hall);
 }
 
 bool MainWindow::validateDate(const QString& date) const
 {
-    QRegularExpression pat("^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[0-2])\\.[0-9]{4}$");
-    return pat.match(date).hasMatch();
+    return dateValid(date);
 }

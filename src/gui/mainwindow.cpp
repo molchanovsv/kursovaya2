@@ -9,7 +9,6 @@
 #include <QDialogButtonBox>
 #include <QTreeWidget>
 #include <QBrush>
-#include <QRegularExpression>
 #include <QMenu>
 #include <QDate>
 #include <QCheckBox>

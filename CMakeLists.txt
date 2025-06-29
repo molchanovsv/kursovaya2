@@ -17,6 +17,7 @@ set(CORE_SOURCES
     src/core/containers/avltree.cpp
     src/core/containers/hashtable.cpp
     src/core/dataloader/dataloader.cpp
+    src/core/validators.cpp
 )
 
 set(HEADERS
@@ -28,6 +29,7 @@ set(HEADERS
     src/core/models/student_entry.h
     src/core/models/teacher.h
     src/core/models/concert_entry.h
+    src/core/validators.h
 )
 
 qt5_wrap_ui(UI_SOURCES src/gui/mainwindow.ui)

@@ -3,7 +3,7 @@
 #include "fio.h"
 #include <QTextCodec>
 #include <QDebug>
-#include <QRegularExpression>
+#include "validators.h"
 
 namespace {
     std::string decodeCp1251(const std::string& str) {
@@ -15,36 +15,6 @@ namespace {
         return codec->toUnicode(str.c_str()).toStdString();
     }
 
-    bool wordValid(const std::string& s) {
-        static const QRegularExpression pat("^[А-ЯЁ][а-яё]+$");
-        return pat.match(QString::fromStdString(s)).hasMatch();
-    }
-
-    bool fioValid(const FIO& f) {
-        return wordValid(f.surname) && wordValid(f.name) && wordValid(f.patronymic);
-    }
-
-    bool instrumentValid(const std::string& s) {
-        static const QRegularExpression pat("^[А-Яа-яЁё]+( [А-Яа-яЁё]+)*$");
-        return pat.match(QString::fromStdString(s)).hasMatch();
-    }
-
-    bool teacherValid(const std::string& s, const std::string& init) {
-        static const QRegularExpression sPat("^[А-ЯЁ][а-яё]+$");
-        static const QRegularExpression iPat("^[А-ЯЁ]\\.[А-ЯЁ]\\.$");
-        return sPat.match(QString::fromStdString(s)).hasMatch() &&
-               iPat.match(QString::fromStdString(init)).hasMatch();
-    }
-
-    bool hallValid(const std::string& hall) {
-        static const QRegularExpression pat("^[А-Яа-яЁё]+ зал$");
-        return pat.match(QString::fromStdString(hall)).hasMatch();
-    }
-
-    bool dateValid(const std::string& date) {
-        static const QRegularExpression pat("^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[0-2])\\.[0-9]{4}$");
-        return pat.match(QString::fromStdString(date)).hasMatch();
-    }
 }
 
 namespace DataLoader {
