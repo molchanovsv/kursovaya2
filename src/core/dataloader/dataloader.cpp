@@ -48,16 +48,17 @@ namespace {
 }
 
 namespace DataLoader {
-    Students_entry* loadStudents(int n, int& count, const std::string& filename) {
+    std::vector<Students_entry> loadStudents(int n, int& count, const std::string& filename) {
         std::string fname = filename.empty() ? "students.txt" : filename;
         qDebug() << "Loading students from" << QString::fromStdString(fname);
         std::ifstream input(fname);
         if (!input.is_open()) {
             qWarning() << "Не удалось открыть файл" << QString::fromStdString(fname);
             count = 0;
-            return new Students_entry[n];
+            return {};
         }
-        Students_entry* records = new Students_entry[n];
+        std::vector<Students_entry> records;
+        records.reserve(n);
         count = 0;
 
         std::string tmp;
@@ -85,7 +86,12 @@ namespace DataLoader {
                 break;
             record.teacher.initials = decodeCp1251(tmp);
 
-            records[count++] = record;
+            if (count < n) {
+                records.push_back(record);
+                ++count;
+            } else {
+                break;
+            }
         }
 
         qDebug() << "Loaded" << count << "students";
