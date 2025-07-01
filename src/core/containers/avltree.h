@@ -40,7 +40,7 @@ public:
     AVLTree();
     ~AVLTree();
 
-    void insert(const Concerts_entry& entry);
+    bool insert(const Concerts_entry& entry);
     void remove(const FIO& fio);
     void toVector(std::vector<Concerts_entry>& vec) const;
     std::vector<Concerts_entry> searchByHall(const std::string& hall) const;

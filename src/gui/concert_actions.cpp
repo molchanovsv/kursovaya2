@@ -16,8 +16,11 @@ void MainWindow::addConcert()
 {
     Concerts_entry e;
     if (concertDialog(e)) {
-        concerts->insert(e);
-        refreshTables();
+        if (!concerts->insert(e)) {
+            QMessageBox::warning(this, "Добавить концерт", "Такая запись уже существует");
+        } else {
+            refreshTables();
+        }
     }
 }
 
@@ -44,7 +47,10 @@ void MainWindow::editConcert()
         return;
 
     concerts->remove(oldEntry.fio);
-    concerts->insert(newEntry);
+    if (!concerts->insert(newEntry)) {
+        QMessageBox::warning(this, "Редактировать концерт", "Такая запись уже существует");
+        concerts->insert(oldEntry);
+    }
     refreshTables();
 }
 void MainWindow::searchConcert()
@@ -186,7 +192,10 @@ void MainWindow::concertCellChanged(int row, int column)
     }
 
     concerts->remove(oldEntry.fio);
-    concerts->insert(newEntry);
+    if (!concerts->insert(newEntry)) {
+        QMessageBox::warning(this, "Редактировать концерт", "Такая запись уже существует");
+        concerts->insert(oldEntry);
+    }
     refreshTables();
     ui->concertsTable->setCurrentCell(row, column);
 }

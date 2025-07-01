@@ -14,8 +14,11 @@ void MainWindow::addStudent()
 {
     Students_entry se;
     if (studentDialog(se)) {
-        students->insert(se);
-        refreshTables();
+        if (!students->insert(se)) {
+            QMessageBox::warning(this, "Добавить ученика", "Такая запись уже существует");
+        } else {
+            refreshTables();
+        }
     }
 }
 
@@ -43,7 +46,10 @@ void MainWindow::editStudent()
         return;
 
     students->remove(oldEntry.fio);
-    students->insert(newEntry);
+    if (!students->insert(newEntry)) {
+        QMessageBox::warning(this, "Редактировать ученика", "Такая запись уже существует");
+        students->insert(oldEntry);
+    }
     refreshTables();
 }
 
@@ -173,7 +179,10 @@ void MainWindow::studentCellChanged(int row, int column)
     }
 
     students->remove(oldEntry.fio);
-    students->insert(newEntry);
+    if (!students->insert(newEntry)) {
+        QMessageBox::warning(this, "Редактировать ученика", "Такая запись уже существует");
+        students->insert(oldEntry);
+    }
     refreshTables();
     ui->studentsTable->setCurrentCell(row, column);
 }

@@ -61,6 +61,10 @@ void HashTable::checkResize() {
 }
 
 bool HashTable::insert(const Students_entry& record) {
+    Students_entry existing;
+    if (find(record.fio, existing) && existing == record)
+        return false;
+
     checkResize();
     int key = calculateKey(record.fio);
     int j = 0;
