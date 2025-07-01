@@ -62,17 +62,21 @@ AVLTree::Node* AVLTree::balance(Node* node) {
 }
 
 AVLTree::Node* AVLTree::insert(Node* node, const Concerts_entry& entry) {
-	if (!node) return new Node(entry);
+    if (!node)
+        return new Node(entry);
 
-	std::string fullNameCurrent = node->data.fio.surname + node->data.fio.name + node->data.fio.patronymic;
-	std::string fullNameNew = entry.fio.surname + entry.fio.name + entry.fio.patronymic;
+    if (entry == node->data)
+        return node;
 
-	if (fullNameNew < fullNameCurrent)
-		node->left = insert(node->left, entry);
-	else
-		node->right = insert(node->right, entry);
+    std::string fullNameCurrent = node->data.fio.surname + node->data.fio.name + node->data.fio.patronymic;
+    std::string fullNameNew = entry.fio.surname + entry.fio.name + entry.fio.patronymic;
 
-	return balance(node);
+    if (fullNameNew < fullNameCurrent)
+        node->left = insert(node->left, entry);
+    else
+        node->right = insert(node->right, entry);
+
+    return balance(node);
 }
 
 AVLTree::Node* AVLTree::findMin(Node* node) const{
@@ -118,8 +122,13 @@ void AVLTree::clear(Node* node) {
 	}
 }
 
-void AVLTree::insert(const Concerts_entry& entry) {
-	root = insert(root, entry);
+bool AVLTree::insert(const Concerts_entry& entry) {
+    Concerts_entry existing;
+    int dummy;
+    if (find(entry.fio, existing, dummy) && existing == entry)
+        return false;
+    root = insert(root, entry);
+    return true;
 }
 
 void AVLTree::remove(const FIO& fio) {

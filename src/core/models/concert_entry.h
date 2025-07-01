@@ -9,6 +9,11 @@ struct Concerts_entry {
     std::string play;
     std::string hall;
     std::string date;
+
+    bool operator==(const Concerts_entry& other) const {
+        return fio == other.fio && play == other.play && hall == other.hall &&
+               date == other.date;
+    }
 };
 
 #endif
