@@ -34,9 +34,6 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree,
     QAction* gojoAct = settingsMenu->addAction("\320\223\320\276\320\264\320\266\320\276 \320\241\320\260\321\202\320\276\321\200\321\203");
     gojoAct->setCheckable(true);
     gojoAct->setActionGroup(themeGroup);
-    QAction* marisaAct = settingsMenu->addAction("\320\234\320\260\321\200\320\270\321\201\321\213 \320\232\320\270\321\200\320\270\321\201\320\260\320\274\320\265 \320\270 Wriggle Nightbug");
-    marisaAct->setCheckable(true);
-    marisaAct->setActionGroup(themeGroup);
     QAction* sansAct = settingsMenu->addAction("\320\241\320\260\320\275\321\201");
     sansAct->setCheckable(true);
     sansAct->setActionGroup(themeGroup);
@@ -46,7 +43,6 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree,
     case Theme::Madagascar: madAct->setChecked(true); break;
     case Theme::Sonic: sonicAct->setChecked(true); break;
     case Theme::GojoSatoru: gojoAct->setChecked(true); break;
-    case Theme::MarisaWriggle: marisaAct->setChecked(true); break;
     case Theme::Sans: sansAct->setChecked(true); break;
     default: darkAct->setChecked(true); break;
     }
@@ -58,7 +54,6 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree,
     connect(madAct, &QAction::triggered, this, [=]{ apply(Theme::Madagascar); });
     connect(sonicAct, &QAction::triggered, this, [=]{ apply(Theme::Sonic); });
     connect(gojoAct, &QAction::triggered, this, [=]{ apply(Theme::GojoSatoru); });
-    connect(marisaAct, &QAction::triggered, this, [=]{ apply(Theme::MarisaWriggle); });
     connect(sansAct, &QAction::triggered, this, [=]{ apply(Theme::Sans); });
     connect(ui->addStudentButton, &QPushButton::clicked, this, &MainWindow::addStudent);
     connect(ui->removeStudentButton, &QPushButton::clicked, this, &MainWindow::removeStudent);
@@ -159,9 +154,9 @@ void MainWindow::refreshTables()
     ui->studentsTable->blockSignals(true);
     ui->studentsTable->clearContents();
     ui->studentsTable->setRowCount(students->getFullSize());
-    ui->studentsTable->setColumnCount(6);
+    ui->studentsTable->setColumnCount(7);
     QStringList studentHeaders;
-    studentHeaders << "Хэш" << "Фамилия" << "Имя" << "Отчество" << "Инструмент" << "Учитель";
+    studentHeaders << "Хэш" << "Фамилия" << "Имя" << "Отчество" << "Инструмент" << "Учитель" << "Статус";
     ui->studentsTable->setHorizontalHeaderLabels(studentHeaders);
     double loadFactor = static_cast<double>(students->getSize()) / students->getFullSize();
     ui->tableInfoLabel->setText(QString("Размер таблицы: %1, заполненность: %2%")
@@ -191,10 +186,12 @@ void MainWindow::refreshTables()
             ui->studentsTable->setItem(i, 3, makeItem(QString::fromStdString(st.fio.patronymic), true));
             ui->studentsTable->setItem(i, 4, makeItem(QString::fromStdString(st.instrument), true));
             ui->studentsTable->setItem(i, 5, makeItem(QString::fromStdString(st.teacher.surname + " " + st.teacher.initials), true));
+            ui->studentsTable->setItem(i, 6, makeItem(QString::number(students->statusAt(i)), false));
             studentRowMap.push_back(i);
         } else {
-            for (int c = 0; c < 6; ++c)
+            for (int c = 0; c < 7; ++c)
                 ui->studentsTable->setItem(i, c, makeItem("", false));
+            ui->studentsTable->setItem(i, 6, makeItem(QString::number(students->statusAt(i)), false));
             studentRowMap.push_back(-1);
         }
     }

@@ -37,6 +37,7 @@ public:
     int getSize() const { return size; }
     int getFullSize() const { return fullSize; }
     bool isOccupied(int index) const { return table[index].status == 1; }
+    int statusAt(int index) const { return table[index].status; }
     const Students_entry& getEntry(int index) const { return table[index].record; }
 };
 

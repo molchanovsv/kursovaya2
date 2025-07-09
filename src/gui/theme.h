@@ -4,7 +4,7 @@
 #include <QApplication>
 #include <QString>
 
-enum class Theme { Dark, Madagascar, Sonic, GojoSatoru, MarisaWriggle, Sans };
+enum class Theme { Dark, Madagascar, Sonic, GojoSatoru, Sans };
 
 Theme themeFromString(const QString& name);
 QString themeToString(Theme t);
