@@ -16,12 +16,12 @@ private:
     int fullSize;
     int size;
 
-    int calculateKey(const FIO& fio, const std::string& instrument) const;
     int hash(int key, int j, int s) const;
     void resize(int newSize);
     void checkResize();
 
 public:
+    int calculateKey(const FIO& fio, const std::string& instrument) const;
     int initialIndex(const FIO& fio, const std::string& instrument) const;
 
     explicit HashTable(int initSize);
