@@ -175,10 +175,16 @@ std::vector<Concerts_entry> AVLTree::searchByDate(const std::string& date) const
     return res;
 }
 
-void AVLTree::fillTreeWidget(Node* node, QTreeWidgetItem* parent, QTreeWidget* tree,
+void AVLTree::fillTreeWidget(Node* node, QTreeWidget* tree,
                              const Concerts_entry* highlight, int depth,
                              const QString& branch) const {
     if (!node) return;
+
+    // Print right subtree first so that the current node appears between
+    // its right and left children. This mimics vertical tree drawing when
+    // viewed as a list.
+    fillTreeWidget(node->right, tree, highlight, depth + 1, "R: ");
+
     QString base = QString::fromStdString(node->data.fio.surname + " " + node->data.fio.name + " " +
                                           node->data.fio.patronymic + " - " + node->data.instrument + " - " + node->data.play +
                                           " - " + node->data.hall + " - " + node->data.date);
@@ -187,13 +193,8 @@ void AVLTree::fillTreeWidget(Node* node, QTreeWidgetItem* parent, QTreeWidget* t
         text = base;
     else
         text = QString(depth - 1, '\t') + branch + base;
-    QTreeWidgetItem* item;
-    if (parent)
-        item = new QTreeWidgetItem(parent);
-    else {
-        item = new QTreeWidgetItem(tree);
-        tree->addTopLevelItem(item);
-    }
+
+    QTreeWidgetItem* item = new QTreeWidgetItem(tree);
     item->setText(0, text);
 
     if (highlight &&
@@ -207,8 +208,7 @@ void AVLTree::fillTreeWidget(Node* node, QTreeWidgetItem* parent, QTreeWidget* t
         item->setBackground(0, QBrush(Qt::magenta));
     }
 
-    fillTreeWidget(node->left, item, tree, highlight, depth + 1, "L: ");
-    fillTreeWidget(node->right, item, tree, highlight, depth + 1, "R: ");
+    fillTreeWidget(node->left, tree, highlight, depth + 1, "L: ");
 }
 
 void AVLTree::buildTreeWidget(QTreeWidget* widget,
@@ -216,7 +216,7 @@ void AVLTree::buildTreeWidget(QTreeWidget* widget,
     if (!widget)
         return;
     widget->clear();
-    fillTreeWidget(root, nullptr, widget, highlight, 0, "");
+    fillTreeWidget(root, widget, highlight, 0, "");
     widget->expandAll();
 }
 
