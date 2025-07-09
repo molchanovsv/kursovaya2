@@ -24,7 +24,7 @@
     "buttontext": "#000000",
     "highlight": "#3cb371",
     "highlightedtext": "#000000",
-    "font": "Verdana"
+    "font": "Trebuchet MS"
   },
   "sonic": {
     "window": "#2066ca",
@@ -37,20 +37,20 @@
     "highlight": "#ff0000",
     "highlightedtext": "#ffffff",
     "link": "#ffff00",
-    "font": "Arial"
+    "font": "Comic Sans MS"
   },
   "gojo": {
-    "window": "#e8e0ff",
-    "windowtext": "#000000",
-    "base": "#f6f2ff",
-    "alternatebase": "#e8e0ff",
-    "text": "#000000",
-    "button": "#d6ccff",
-    "buttontext": "#000000",
-    "highlight": "#8060ff",
+    "window": "#7d35ff",
+    "windowtext": "#ffffff",
+    "base": "#0015ff",
+    "alternatebase": "#7d35ff",
+    "text": "#ffffff",
+    "button": "#c012ff",
+    "buttontext": "#ffffff",
+    "highlight": "#ff0066",
     "highlightedtext": "#ffffff",
-    "link": "#ff6666",
-    "font": "Courier New"
+    "link": "#ff0000",
+    "font": "Impact"
   },
   "sans": {
     "window": "#f0f8ff",
