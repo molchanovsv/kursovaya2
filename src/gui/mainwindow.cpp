@@ -103,7 +103,7 @@ void MainWindow::refreshTables()
                 return it;
             };
 
-            int h = students->initialIndex(st.fio, st.instrument);
+            int h = students->calculateKey(st.fio, st.instrument);
             ui->studentsTable->setItem(row, 0, makeItem(QString::number(h)));
             ui->studentsTable->setItem(row, 1, makeItem(QString::fromStdString(st.fio.surname)));
             ui->studentsTable->setItem(row, 2, makeItem(QString::fromStdString(st.fio.name)));
