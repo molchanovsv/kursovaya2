@@ -177,13 +177,13 @@ std::vector<Concerts_entry> AVLTree::searchByDate(const std::string& date) const
 
 void AVLTree::fillTreeWidget(Node* node, QTreeWidget* tree,
                              const Concerts_entry* highlight, int depth,
-                             const QString& branch) const {
+                             const QString& /*branch*/) const {
     if (!node) return;
 
     // Print right subtree first so that the current node appears between
     // its right and left children. This mimics vertical tree drawing when
     // viewed as a list.
-    fillTreeWidget(node->right, tree, highlight, depth + 1, "R: ");
+    fillTreeWidget(node->right, tree, highlight, depth + 1, "");
 
     QString base = QString::fromStdString(node->data.fio.surname + " " + node->data.fio.name + " " +
                                           node->data.fio.patronymic + " - " + node->data.instrument + " - " + node->data.play +
@@ -192,7 +192,7 @@ void AVLTree::fillTreeWidget(Node* node, QTreeWidget* tree,
     if (depth == 0)
         text = base;
     else
-        text = QString(depth - 1, '\t') + branch + base;
+        text = QString(depth, '\t') + base;
 
     QTreeWidgetItem* item = new QTreeWidgetItem(tree);
     item->setText(0, text);
@@ -208,7 +208,7 @@ void AVLTree::fillTreeWidget(Node* node, QTreeWidget* tree,
         item->setBackground(0, QBrush(Qt::magenta));
     }
 
-    fillTreeWidget(node->left, tree, highlight, depth + 1, "L: ");
+    fillTreeWidget(node->left, tree, highlight, depth + 1, "");
 }
 
 void AVLTree::buildTreeWidget(QTreeWidget* widget,
