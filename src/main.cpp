@@ -86,6 +86,7 @@ int main(int argc, char *argv[])
     };
     QObject::connect(&studEdit, &QLineEdit::textChanged, validate);
     QObject::connect(&concEdit, &QLineEdit::textChanged, validate);
+    QObject::connect(&hashSizeSpin, qOverload<int>(&QSpinBox::valueChanged), validate);
     validate();
 
     QObject::connect(&buttons, &QDialogButtonBox::accepted, &fileDialog, &QDialog::accept);
