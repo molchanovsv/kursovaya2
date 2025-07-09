@@ -3,56 +3,76 @@
 #include <QPalette>
 #include <QColor>
 #include <QStyle>
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QHash>
+
+namespace {
+QJsonObject loadThemes()
+{
+    QFile f(":/themes.json");
+    if (!f.open(QIODevice::ReadOnly))
+        return {};
+    QJsonDocument doc = QJsonDocument::fromJson(f.readAll());
+    return doc.object();
+}
+
+QJsonObject& themes()
+{
+    static QJsonObject obj = loadThemes();
+    return obj;
+}
+
+QPalette::ColorRole roleFromString(const QString& name)
+{
+    static const QHash<QString, QPalette::ColorRole> map = {
+        {"window", QPalette::Window},
+        {"windowtext", QPalette::WindowText},
+        {"base", QPalette::Base},
+        {"alternatebase", QPalette::AlternateBase},
+        {"tooltipbase", QPalette::ToolTipBase},
+        {"tooltiptext", QPalette::ToolTipText},
+        {"text", QPalette::Text},
+        {"button", QPalette::Button},
+        {"buttontext", QPalette::ButtonText},
+        {"brighttext", QPalette::BrightText},
+        {"link", QPalette::Link},
+        {"highlight", QPalette::Highlight},
+        {"highlightedtext", QPalette::HighlightedText}
+    };
+    return map.value(name.toLower(), QPalette::Window);
+}
+}
 
 Theme themeFromString(const QString& name) {
     QString n = name.toLower();
-    if (n == "light") return Theme::Light;
     if (n == "madagascar") return Theme::Madagascar;
+    if (n == "sonic") return Theme::Sonic;
+    if (n == "gojo" || n == "gojosatoru") return Theme::GojoSatoru;
+
     return Theme::Dark;
 }
 
 QString themeToString(Theme t) {
     switch (t) {
-    case Theme::Light: return "light";
     case Theme::Madagascar: return "madagascar";
+    case Theme::Sonic: return "sonic";
+    case Theme::GojoSatoru: return "gojo";
     default: return "dark";
     }
 }
 
 void applyTheme(Theme t, QApplication& app) {
     app.setStyle(QStyleFactory::create("Fusion"));
-    QPalette p;
-    switch (t) {
-    case Theme::Dark:
-        p.setColor(QPalette::Window, QColor(53,53,53));
-        p.setColor(QPalette::WindowText, Qt::white);
-        p.setColor(QPalette::Base, QColor(25,25,25));
-        p.setColor(QPalette::AlternateBase, QColor(53,53,53));
-        p.setColor(QPalette::ToolTipBase, Qt::white);
-        p.setColor(QPalette::ToolTipText, Qt::white);
-        p.setColor(QPalette::Text, Qt::white);
-        p.setColor(QPalette::Button, QColor(53,53,53));
-        p.setColor(QPalette::ButtonText, Qt::white);
-        p.setColor(QPalette::BrightText, Qt::red);
-        p.setColor(QPalette::Link, QColor(42, 130, 218));
-        p.setColor(QPalette::Highlight, QColor(42,130,218));
-        p.setColor(QPalette::HighlightedText, Qt::black);
-        break;
-    case Theme::Madagascar:
-        p.setColor(QPalette::Window, QColor(244, 164, 96));
-        p.setColor(QPalette::WindowText, Qt::black);
-        p.setColor(QPalette::Base, QColor(255, 228, 181));
-        p.setColor(QPalette::AlternateBase, QColor(244, 164, 96));
-        p.setColor(QPalette::Text, Qt::black);
-        p.setColor(QPalette::Button, QColor(250, 128, 114));
-        p.setColor(QPalette::ButtonText, Qt::black);
-        p.setColor(QPalette::Highlight, QColor(60, 179, 113));
-        p.setColor(QPalette::HighlightedText, Qt::black);
-        break;
-    case Theme::Light:
-    default:
-        p = app.style()->standardPalette();
-        break;
+    QPalette p = app.style()->standardPalette();
+
+    QJsonObject themeObj = themes().value(themeToString(t)).toObject();
+    for (auto it = themeObj.constBegin(); it != themeObj.constEnd(); ++it) {
+        QPalette::ColorRole role = roleFromString(it.key());
+        QColor color(it.value().toString());
+        if (color.isValid())
+            p.setColor(role, color);
     }
     app.setPalette(p);
 }
