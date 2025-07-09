@@ -63,6 +63,7 @@ int main(int argc, char *argv[])
         bool ok = true;
         std::string err;
         int studCount = 0;
+
         if (studEdit.text().isEmpty()) {
             msg = "Укажите файл студентов";
             ok = false;
@@ -75,12 +76,19 @@ int main(int argc, char *argv[])
         } else if (!DataLoader::validateConcertsFile(concEdit.text().toStdString(), err)) {
             msg = QString::fromStdString(err);
             ok = false;
-        } else if (hashSizeSpin.value() < studCount) {
+        }
+
+        if (studCount > 0) {
+            hashSizeSpin.setMinimum(studCount);
+            if (hashSizeSpin.value() < studCount)
+                hashSizeSpin.setValue(studCount);
+        }
+
+        if (ok && hashSizeSpin.value() < studCount) {
             msg = "Размер хэш-таблицы меньше количества записей";
             ok = false;
         }
-        if (studCount > 0)
-            hashSizeSpin.setMinimum(studCount);
+
         buttons.button(QDialogButtonBox::Ok)->setEnabled(ok);
         errorLabel.setText(msg);
     };
