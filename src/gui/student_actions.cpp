@@ -143,11 +143,11 @@ void MainWindow::studentCellChanged(int row, int column)
         return item ? item->text().toStdString() : oldVal;
     };
 
-    newEntry.fio.surname = getText(0, oldEntry.fio.surname);
-    newEntry.fio.name = getText(1, oldEntry.fio.name);
-    newEntry.fio.patronymic = getText(2, oldEntry.fio.patronymic);
-    newEntry.instrument = getText(3, oldEntry.instrument);
-    std::string teacher = getText(4, oldEntry.teacher.surname + " " + oldEntry.teacher.initials);
+    newEntry.fio.surname = getText(1, oldEntry.fio.surname);
+    newEntry.fio.name = getText(2, oldEntry.fio.name);
+    newEntry.fio.patronymic = getText(3, oldEntry.fio.patronymic);
+    newEntry.instrument = getText(4, oldEntry.instrument);
+    std::string teacher = getText(5, oldEntry.teacher.surname + " " + oldEntry.teacher.initials);
     size_t sp = teacher.find(' ');
     if (sp == std::string::npos) {
         newEntry.teacher.surname = teacher;
@@ -193,7 +193,7 @@ void MainWindow::studentContextMenu(const QPoint& pos)
     int row = ui->studentsTable->rowAt(pos.y());
     if (row < 0 || row >= static_cast<int>(studentRowMap.size()))
         return;
-    ui->studentsTable->setCurrentCell(row, 0);
+    ui->studentsTable->setCurrentCell(row, 1);
     QMenu menu(this);
     QAction* edit = menu.addAction("Изменить");
     QAction* remove = menu.addAction("Удалить");

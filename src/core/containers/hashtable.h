@@ -22,6 +22,8 @@ private:
     void checkResize();
 
 public:
+    int initialIndex(const FIO& fio, const std::string& instrument) const;
+
     explicit HashTable(int initSize);
     ~HashTable();
 

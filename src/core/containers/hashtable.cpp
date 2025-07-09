@@ -24,6 +24,11 @@ int HashTable::hash(int key, int j, int s) const {
     return (key + j) % s;
 }
 
+int HashTable::initialIndex(const FIO& fio, const std::string& instrument) const {
+    int key = calculateKey(fio, instrument);
+    return hash(key, 0, fullSize);
+}
+
 void HashTable::resize(int newSize) {
     Entry* newTable = new Entry[newSize];
     for (int i = 0; i < newSize; ++i) {
@@ -57,6 +62,8 @@ void HashTable::checkResize() {
     double loadFactor = static_cast<double>(size) / fullSize;
     if (loadFactor >= 0.6) {
         resize(fullSize * 2);
+    } else if (loadFactor <= 0.25 && fullSize > 1) {
+        resize(fullSize / 2);
     }
 }
 

@@ -26,8 +26,18 @@
           </property>
           <widget class="QWidget" name="studentsPanel">
            <layout class="QVBoxLayout" name="verticalLayout">
-              <item>
-               <widget class="QTableWidget" name="studentsTable">
+               <item>
+                <widget class="QLabel" name="tableInfoLabel">
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QTableWidget" name="studentsTable">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                   <horstretch>0</horstretch>
