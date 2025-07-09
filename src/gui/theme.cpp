@@ -50,6 +50,7 @@ Theme themeFromString(const QString& name) {
     if (n == "madagascar") return Theme::Madagascar;
     if (n == "sonic") return Theme::Sonic;
     if (n == "gojo" || n == "gojosatoru") return Theme::GojoSatoru;
+    if (n == "marisa" || n == "marisawriggle") return Theme::MarisaWriggle;
 
     return Theme::Dark;
 }
@@ -59,6 +60,7 @@ QString themeToString(Theme t) {
     case Theme::Madagascar: return "madagascar";
     case Theme::Sonic: return "sonic";
     case Theme::GojoSatoru: return "gojo";
+    case Theme::MarisaWriggle: return "marisa";
     default: return "dark";
     }
 }
