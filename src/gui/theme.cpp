@@ -1,5 +1,8 @@
 #include "theme.h"
 #include <QStyleFactory>
+#include <QPalette>
+#include <QColor>
+#include <QStyle>
 
 Theme themeFromString(const QString& name) {
     QString n = name.toLower();
