@@ -11,6 +11,7 @@
 #include "mainwindow.h"
 #include "dataloader.h"
 #include <QIcon>
+#include <QSettings>
 #include <memory>
 
 int main(int argc, char *argv[])
@@ -19,10 +20,15 @@ int main(int argc, char *argv[])
     app.setApplicationName("База Данных Музыкальной Школы");
     app.setWindowIcon(QIcon(":/app.ico"));
 
+    QCoreApplication::setOrganizationName("MusicSchool");
+    QSettings settings;
+
     QDialog fileDialog;
     fileDialog.setWindowTitle("Выбор файлов");
     QFormLayout layout(&fileDialog);
     QLineEdit studEdit, concEdit;
+    studEdit.setText(settings.value("lastStudentFile").toString());
+    concEdit.setText(settings.value("lastConcertFile").toString());
     QSpinBox hashSizeSpin;
     hashSizeSpin.setMinimum(1);
     QPushButton browseStud("...");
@@ -57,6 +63,7 @@ int main(int argc, char *argv[])
         bool ok = true;
         std::string err;
         int studCount = 0;
+
         if (studEdit.text().isEmpty()) {
             msg = "Укажите файл студентов";
             ok = false;
@@ -69,23 +76,34 @@ int main(int argc, char *argv[])
         } else if (!DataLoader::validateConcertsFile(concEdit.text().toStdString(), err)) {
             msg = QString::fromStdString(err);
             ok = false;
-        } else if (hashSizeSpin.value() < studCount) {
+        }
+
+        if (studCount > 0) {
+            hashSizeSpin.setMinimum(studCount);
+            if (hashSizeSpin.value() < studCount)
+                hashSizeSpin.setValue(studCount);
+        }
+
+        if (ok && hashSizeSpin.value() < studCount) {
             msg = "Размер хэш-таблицы меньше количества записей";
             ok = false;
         }
-        if (studCount > 0)
-            hashSizeSpin.setMinimum(studCount);
+
         buttons.button(QDialogButtonBox::Ok)->setEnabled(ok);
         errorLabel.setText(msg);
     };
     QObject::connect(&studEdit, &QLineEdit::textChanged, validate);
     QObject::connect(&concEdit, &QLineEdit::textChanged, validate);
+    QObject::connect(&hashSizeSpin, qOverload<int>(&QSpinBox::valueChanged), validate);
     validate();
 
     QObject::connect(&buttons, &QDialogButtonBox::accepted, &fileDialog, &QDialog::accept);
     QObject::connect(&buttons, &QDialogButtonBox::rejected, &fileDialog, &QDialog::reject);
     if (fileDialog.exec() != QDialog::Accepted)
         return 0;
+
+    settings.setValue("lastStudentFile", studEdit.text());
+    settings.setValue("lastConcertFile", concEdit.text());
 
     int count = 0;
     std::string err;
