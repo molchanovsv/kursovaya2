@@ -60,10 +60,14 @@ void MainWindow::refreshTables()
     ui->studentsTable->blockSignals(true);
     ui->studentsTable->clearContents();
     ui->studentsTable->setRowCount(0);
-    ui->studentsTable->setColumnCount(5);
+    ui->studentsTable->setColumnCount(6);
     QStringList studentHeaders;
-    studentHeaders << "Фамилия" << "Имя" << "Отчество" << "Инструмент" << "Учитель";
+    studentHeaders << "Хэш" << "Фамилия" << "Имя" << "Отчество" << "Инструмент" << "Учитель";
     ui->studentsTable->setHorizontalHeaderLabels(studentHeaders);
+    double loadFactor = static_cast<double>(students->getSize()) / students->getFullSize();
+    ui->tableInfoLabel->setText(QString("Размер таблицы: %1, заполненность: %2%")
+        .arg(students->getFullSize())
+        .arg(loadFactor * 100.0, 0, 'f', 2));
     bool useSearch = studentFilterActive;
     studentRowMap.clear();
     int row = 0;
@@ -99,11 +103,13 @@ void MainWindow::refreshTables()
                 return it;
             };
 
-            ui->studentsTable->setItem(row, 0, makeItem(QString::fromStdString(st.fio.surname)));
-            ui->studentsTable->setItem(row, 1, makeItem(QString::fromStdString(st.fio.name)));
-            ui->studentsTable->setItem(row, 2, makeItem(QString::fromStdString(st.fio.patronymic)));
-            ui->studentsTable->setItem(row, 3, makeItem(QString::fromStdString(st.instrument)));
-            ui->studentsTable->setItem(row, 4, makeItem(QString::fromStdString(st.teacher.surname + " " + st.teacher.initials)));
+            int h = students->initialIndex(st.fio, st.instrument);
+            ui->studentsTable->setItem(row, 0, makeItem(QString::number(h)));
+            ui->studentsTable->setItem(row, 1, makeItem(QString::fromStdString(st.fio.surname)));
+            ui->studentsTable->setItem(row, 2, makeItem(QString::fromStdString(st.fio.name)));
+            ui->studentsTable->setItem(row, 3, makeItem(QString::fromStdString(st.fio.patronymic)));
+            ui->studentsTable->setItem(row, 4, makeItem(QString::fromStdString(st.instrument)));
+            ui->studentsTable->setItem(row, 5, makeItem(QString::fromStdString(st.teacher.surname + " " + st.teacher.initials)));
             studentRowMap.push_back(i);
             ++row;
         }
