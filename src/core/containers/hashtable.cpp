@@ -59,10 +59,10 @@ void HashTable::resize(int newSize) {
 }
 
 void HashTable::checkResize() {
-    double loadFactor = static_cast<double>(size) / fullSize;
+    double loadFactor = fullSize > 0 ? static_cast<double>(size) / fullSize : 0.0;
     if (loadFactor >= 0.6) {
         resize(fullSize * 2);
-    } else if (loadFactor <= 0.25 && fullSize > 1) {
+    } else if (loadFactor <= 0.25 && fullSize > 1 && size > 0) {
         resize(fullSize / 2);
     }
 }
@@ -73,7 +73,6 @@ bool HashTable::insert(const Students_entry& record) {
         existing.fio == record.fio && existing.instrument == record.instrument)
         return false;
 
-    checkResize();
     int key = calculateKey(record.fio, record.instrument);
     int j = 0;
     int index;
@@ -83,6 +82,7 @@ bool HashTable::insert(const Students_entry& record) {
             table[index].record = record;
             table[index].status = 1;
             ++size;
+            checkResize();
             return true;
         }
         ++j;
