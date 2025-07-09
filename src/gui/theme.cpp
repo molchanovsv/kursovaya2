@@ -50,6 +50,7 @@ Theme themeFromString(const QString& name) {
     if (n == "madagascar") return Theme::Madagascar;
     if (n == "sonic") return Theme::Sonic;
     if (n == "gojo" || n == "gojosatoru") return Theme::GojoSatoru;
+
     return Theme::Dark;
 }
 
@@ -73,7 +74,6 @@ void applyTheme(Theme t, QApplication& app) {
         if (color.isValid())
             p.setColor(role, color);
     }
-
     app.setPalette(p);
 }
 
