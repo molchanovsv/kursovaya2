@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
     for(const auto& c : concerts)
         tree->insert(c);
 
-    MainWindow w(table.get(), tree.get(), studEdit.text(), concEdit.text());
+    MainWindow w(table.get(), tree.get(), records, studEdit.text(), concEdit.text());
     w.setWindowTitle("База Данных Музыкальной Школы");
     w.setWindowIcon(QIcon(":/app.ico"));
     w.show();

@@ -9,12 +9,14 @@
 #include <QSettings>
 #include "theme.h"
 #include <vector>
+#include "student_entry.h"
 
 MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree,
+                       const std::vector<Students_entry>& rawStudents,
                        const QString& studFile, const QString& concFile,
                        QWidget* parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), students(studentsTable), concerts(concertTree),
-      studentFile(studFile), concertFile(concFile)
+      studentList(rawStudents), studentFile(studFile), concertFile(concFile)
 {
     ui->setupUi(this);
 
@@ -98,9 +100,57 @@ void MainWindow::refreshTables()
 {
     ui->clearStudentSearchButton->setVisible(studentFilterActive);
     ui->clearConcertSearchButton->setVisible(concertFilterActive);
+    ui->studentsVectorTable->clearContents();
+    ui->studentsVectorTable->setRowCount(0);
+    ui->studentsVectorTable->setColumnCount(5);
+    QStringList vecHeaders;
+    vecHeaders << "Фамилия" << "Имя" << "Отчество" << "Инструмент" << "Учитель";
+    ui->studentsVectorTable->setHorizontalHeaderLabels(vecHeaders);
+
+    auto makeItemRO = [](const QString& t) {
+        QTableWidgetItem* it = new QTableWidgetItem(t);
+        it->setTextAlignment(Qt::AlignCenter);
+        it->setFlags(it->flags() & ~Qt::ItemIsEditable);
+        return it;
+    };
+
+    bool useSearchVec = studentFilterActive;
+    int vrow = 0;
+    for (int i = 0; i < static_cast<int>(studentList.size()); ++i) {
+        const auto& st = studentList[i];
+        QString sur = QString::fromStdString(st.fio.surname);
+        QString nam = QString::fromStdString(st.fio.name);
+        QString pat = QString::fromStdString(st.fio.patronymic);
+        QString instr = QString::fromStdString(st.instrument);
+        QString teacher = QString::fromStdString(st.teacher.surname + " " + st.teacher.initials);
+        if (useSearchVec) {
+            if (!sSurname.isEmpty() && !sur.contains(sSurname, Qt::CaseInsensitive))
+                continue;
+            if (!sName.isEmpty() && !nam.contains(sName, Qt::CaseInsensitive))
+                continue;
+            if (!sPatronymic.isEmpty() && !pat.contains(sPatronymic, Qt::CaseInsensitive))
+                continue;
+            if (!sInstr.isEmpty() && !instr.contains(sInstr, Qt::CaseInsensitive))
+                continue;
+            if (!sTeacher.isEmpty() && !teacher.contains(sTeacher, Qt::CaseInsensitive))
+                continue;
+        }
+        ui->studentsVectorTable->insertRow(vrow);
+        QTableWidgetItem* vh = new QTableWidgetItem(QString::number(i));
+        vh->setTextAlignment(Qt::AlignCenter);
+        ui->studentsVectorTable->setVerticalHeaderItem(vrow, vh);
+        ui->studentsVectorTable->setItem(vrow, 0, makeItemRO(sur));
+        ui->studentsVectorTable->setItem(vrow, 1, makeItemRO(nam));
+        ui->studentsVectorTable->setItem(vrow, 2, makeItemRO(pat));
+        ui->studentsVectorTable->setItem(vrow, 3, makeItemRO(instr));
+        ui->studentsVectorTable->setItem(vrow, 4, makeItemRO(teacher));
+        ++vrow;
+    }
+    ui->studentsVectorTable->setRowCount(vrow);
+
     ui->studentsTable->blockSignals(true);
     ui->studentsTable->clearContents();
-    ui->studentsTable->setRowCount(0);
+    ui->studentsTable->setRowCount(students->getFullSize());
     ui->studentsTable->setColumnCount(6);
     QStringList studentHeaders;
     studentHeaders << "Хэш" << "Фамилия" << "Имя" << "Отчество" << "Инструмент" << "Учитель";
@@ -109,55 +159,37 @@ void MainWindow::refreshTables()
     ui->tableInfoLabel->setText(QString("Размер таблицы: %1, заполненность: %2%")
         .arg(students->getFullSize())
         .arg(loadFactor * 100.0, 0, 'f', 2));
-    bool useSearch = studentFilterActive;
     studentRowMap.clear();
-    int row = 0;
-    for (int i = 0; i < students->getFullSize(); ++i) {
+    int full = students->getFullSize();
+    for (int i = 0; i < full; ++i) {
+        QTableWidgetItem* vh = new QTableWidgetItem(QString::number(i));
+        vh->setTextAlignment(Qt::AlignCenter);
+        ui->studentsTable->setVerticalHeaderItem(i, vh);
+
+        auto makeItem = [](const QString& t, bool editable) {
+            QTableWidgetItem* it = new QTableWidgetItem(t);
+            it->setTextAlignment(Qt::AlignCenter);
+            if (!editable)
+                it->setFlags(it->flags() & ~Qt::ItemIsEditable);
+            return it;
+        };
+
         if (students->isOccupied(i)) {
             const auto& st = students->getEntry(i);
-            QString sur = QString::fromStdString(st.fio.surname);
-            QString nam = QString::fromStdString(st.fio.name);
-            QString pat = QString::fromStdString(st.fio.patronymic);
-            QString instr = QString::fromStdString(st.instrument);
-            QString teacher =
-                QString::fromStdString(st.teacher.surname + " " + st.teacher.initials);
-            if (useSearch) {
-                if (!sSurname.isEmpty() && !sur.contains(sSurname, Qt::CaseInsensitive))
-                    continue;
-                if (!sName.isEmpty() && !nam.contains(sName, Qt::CaseInsensitive))
-                    continue;
-                if (!sPatronymic.isEmpty() && !pat.contains(sPatronymic, Qt::CaseInsensitive))
-                    continue;
-                if (!sInstr.isEmpty() && !instr.contains(sInstr, Qt::CaseInsensitive))
-                    continue;
-                if (!sTeacher.isEmpty() && !teacher.contains(sTeacher, Qt::CaseInsensitive))
-                    continue;
-            }
-            ui->studentsTable->insertRow(row);
-            QTableWidgetItem* vh = new QTableWidgetItem(QString::number(i));
-            vh->setTextAlignment(Qt::AlignCenter);
-            ui->studentsTable->setVerticalHeaderItem(row, vh);
-
-            auto makeItem = [](const QString& t) {
-                QTableWidgetItem* it = new QTableWidgetItem(t);
-                it->setTextAlignment(Qt::AlignCenter);
-                return it;
-            };
-
             int h = students->calculateKey(st.fio, st.instrument);
-            QTableWidgetItem* hashItem = makeItem(QString::number(h));
-            hashItem->setFlags(hashItem->flags() & ~Qt::ItemIsEditable);
-            ui->studentsTable->setItem(row, 0, hashItem);
-            ui->studentsTable->setItem(row, 1, makeItem(QString::fromStdString(st.fio.surname)));
-            ui->studentsTable->setItem(row, 2, makeItem(QString::fromStdString(st.fio.name)));
-            ui->studentsTable->setItem(row, 3, makeItem(QString::fromStdString(st.fio.patronymic)));
-            ui->studentsTable->setItem(row, 4, makeItem(QString::fromStdString(st.instrument)));
-            ui->studentsTable->setItem(row, 5, makeItem(QString::fromStdString(st.teacher.surname + " " + st.teacher.initials)));
+            ui->studentsTable->setItem(i, 0, makeItem(QString::number(h), false));
+            ui->studentsTable->setItem(i, 1, makeItem(QString::fromStdString(st.fio.surname), true));
+            ui->studentsTable->setItem(i, 2, makeItem(QString::fromStdString(st.fio.name), true));
+            ui->studentsTable->setItem(i, 3, makeItem(QString::fromStdString(st.fio.patronymic), true));
+            ui->studentsTable->setItem(i, 4, makeItem(QString::fromStdString(st.instrument), true));
+            ui->studentsTable->setItem(i, 5, makeItem(QString::fromStdString(st.teacher.surname + " " + st.teacher.initials), true));
             studentRowMap.push_back(i);
-            ++row;
+        } else {
+            for (int c = 0; c < 6; ++c)
+                ui->studentsTable->setItem(i, c, makeItem("", false));
+            studentRowMap.push_back(-1);
         }
     }
-    ui->studentsTable->setRowCount(row);
     ui->studentsTable->blockSignals(false);
 
     std::vector<Concerts_entry> list;

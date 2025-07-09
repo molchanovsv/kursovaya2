@@ -41,6 +41,10 @@ void MainWindow::editStudent()
     }
 
     int index = studentRowMap[row];
+    if (index < 0 || !students->isOccupied(index)) {
+        QMessageBox::warning(this, "Редактировать ученика", "Выберите запись в таблице.");
+        return;
+    }
     Students_entry oldEntry = students->getEntry(index);
     Students_entry newEntry = oldEntry;
     if (!studentDialog(newEntry, &oldEntry))
@@ -133,7 +137,7 @@ void MainWindow::studentCellChanged(int row, int column)
     if (row < 0 || row >= static_cast<int>(studentRowMap.size()))
         return;
     int index = studentRowMap[row];
-    if (!students->isOccupied(index))
+    if (index < 0 || !students->isOccupied(index))
         return;
     Students_entry oldEntry = students->getEntry(index);
     Students_entry newEntry = oldEntry;
@@ -192,6 +196,8 @@ void MainWindow::studentContextMenu(const QPoint& pos)
 {
     int row = ui->studentsTable->rowAt(pos.y());
     if (row < 0 || row >= static_cast<int>(studentRowMap.size()))
+        return;
+    if (studentRowMap[row] < 0 || !students->isOccupied(studentRowMap[row]))
         return;
     ui->studentsTable->setCurrentCell(row, 1);
     QMenu menu(this);
