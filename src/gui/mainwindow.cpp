@@ -104,7 +104,9 @@ void MainWindow::refreshTables()
             };
 
             int h = students->calculateKey(st.fio, st.instrument);
-            ui->studentsTable->setItem(row, 0, makeItem(QString::number(h)));
+            QTableWidgetItem* hashItem = makeItem(QString::number(h));
+            hashItem->setFlags(hashItem->flags() & ~Qt::ItemIsEditable);
+            ui->studentsTable->setItem(row, 0, hashItem);
             ui->studentsTable->setItem(row, 1, makeItem(QString::fromStdString(st.fio.surname)));
             ui->studentsTable->setItem(row, 2, makeItem(QString::fromStdString(st.fio.name)));
             ui->studentsTable->setItem(row, 3, makeItem(QString::fromStdString(st.fio.patronymic)));
