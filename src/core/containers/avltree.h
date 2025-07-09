@@ -28,7 +28,7 @@ private:
     Node* insert(Node* node, const Concerts_entry& entry);
     Node* findMin(Node* node) const;
     Node* removeMin(Node* node);
-    Node* remove(Node* node, const FIO& fio);
+    Node* remove(Node* node, const FIO& fio, const std::string& instrument);
     void clear(Node* node);
     void toVector(Node* node, std::vector<Concerts_entry>& vec) const;
     void searchHall(Node* node, const std::string& hall, std::vector<Concerts_entry>& vec) const;
@@ -41,13 +41,13 @@ public:
     ~AVLTree();
 
     bool insert(const Concerts_entry& entry);
-    void remove(const FIO& fio);
+    void remove(const FIO& fio, const std::string& instrument);
     void toVector(std::vector<Concerts_entry>& vec) const;
     std::vector<Concerts_entry> searchByHall(const std::string& hall) const;
     std::vector<Concerts_entry> searchByDate(const std::string& date) const;
     void buildTreeWidget(QTreeWidget* widget,
                          const Concerts_entry* highlight = nullptr) const;
-    bool find(const FIO& fio, Concerts_entry& res, int& steps) const;
+    bool find(const FIO& fio, const std::string& instrument, Concerts_entry& res, int& steps) const;
 };
 
 #endif

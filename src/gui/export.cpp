@@ -21,7 +21,7 @@ void MainWindow::updateReport()
     std::vector<std::array<QString,8>> rows;
     for (const auto& c : concertsList) {
         Students_entry st;
-        if (!students->find(c.fio, st))
+        if (!students->find(c.fio, c.instrument, st))
             continue;
 
         QString inst = QString::fromStdString(st.instrument);
@@ -103,7 +103,7 @@ void MainWindow::exportConcerts()
     std::vector<Concerts_entry> vec;
     concerts->toVector(vec);
     for (const auto& c : vec) {
-        out << c.fio.surname << ' ' << c.fio.name << ' ' << c.fio.patronymic
+        out << c.fio.surname << ' ' << c.fio.name << ' ' << c.fio.patronymic << ' ' << c.instrument
             << " \"" << c.play << "\" " << c.hall << ' ' << c.date << '\n';
     }
 }
@@ -130,7 +130,7 @@ void MainWindow::exportReport()
     concerts->toVector(concertsList);
     for (const auto& c : concertsList) {
         Students_entry st;
-        if (!students->find(c.fio, st))
+        if (!students->find(c.fio, c.instrument, st))
             continue;
 
         QString inst = QString::fromStdString(st.instrument);

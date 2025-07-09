@@ -16,7 +16,7 @@ private:
     int fullSize;
     int size;
 
-    int calculateKey(const FIO& fio) const;
+    int calculateKey(const FIO& fio, const std::string& instrument) const;
     int hash(int key, int j, int s) const;
     void resize(int newSize);
     void checkResize();
@@ -26,9 +26,9 @@ public:
     ~HashTable();
 
     bool insert(const Students_entry& record);
-    bool remove(const FIO& fio);
-    bool find(const FIO& fio, Students_entry& res) const;
-    bool find(const FIO& fio, Students_entry& res, int& steps) const;
+    bool remove(const FIO& fio, const std::string& instrument);
+    bool find(const FIO& fio, const std::string& instrument, Students_entry& res) const;
+    bool find(const FIO& fio, const std::string& instrument, Students_entry& res, int& steps) const;
     std::vector<Students_entry> searchByInstrument(const std::string& instr) const;
     std::vector<Students_entry> searchByName(const std::string& name) const;
 

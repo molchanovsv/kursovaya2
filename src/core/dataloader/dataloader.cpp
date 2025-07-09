@@ -94,6 +94,10 @@ namespace DataLoader {
                 break;
             entry.fio.patronymic = decodeCp1251(line);
 
+            if (!(file >> line))
+                break;
+            entry.instrument = decodeCp1251(line);
+
             file >> std::ws;
             if (!std::getline(file, line, '"'))
                 break; // skip to quote
@@ -172,6 +176,8 @@ namespace DataLoader {
             e.fio.name = decodeCp1251(word);
             if (!(in >> word)) { error = "Файл концертов имеет неверный формат"; return false; }
             e.fio.patronymic = decodeCp1251(word);
+            if (!(in >> word)) { error = "Файл концертов имеет неверный формат"; return false; }
+            e.instrument = decodeCp1251(word);
 
             in >> std::ws;
             if (!std::getline(in, word, '"')) { error = "Файл концертов имеет неверный формат"; return false; }
@@ -186,7 +192,8 @@ namespace DataLoader {
             if (!(in >> word)) { error = "Файл концертов имеет неверный формат"; return false; }
             e.date = decodeCp1251(word);
 
-            if (!fioValid(e.fio) || !hallValid(e.hall) || !dateValid(e.date)) {
+            if (!fioValid(e.fio) || !instrumentValid(e.instrument) ||
+                !hallValid(e.hall) || !dateValid(e.date)) {
                 error = "Некорректные данные в файле концертов";
                 return false;
             }

@@ -25,9 +25,10 @@ void MainWindow::addStudent()
 void MainWindow::removeStudent()
 {
     FIO f;
-    if (!fioDialog(f, nullptr, "Удалить ученика"))
+    std::string instr;
+    if (!fioInstrumentDialog(f, instr, nullptr, QString(), "Удалить ученика"))
         return;
-    students->remove(f);
+    students->remove(f, instr);
     refreshTables();
 }
 
@@ -45,7 +46,7 @@ void MainWindow::editStudent()
     if (!studentDialog(newEntry, &oldEntry))
         return;
 
-    students->remove(oldEntry.fio);
+    students->remove(oldEntry.fio, oldEntry.instrument);
     if (!students->insert(newEntry)) {
         QMessageBox::warning(this, "Редактировать ученика", "Такая запись уже существует");
         students->insert(oldEntry);
@@ -97,7 +98,7 @@ void MainWindow::searchStudent()
             FIO f{ sSurname.toStdString(), sName.toStdString(), sPatronymic.toStdString() };
             Students_entry tmp;
             int steps = 0;
-            bool found = students->find(f, tmp, steps);
+            bool found = students->find(f, sInstr.toStdString(), tmp, steps);
             ui->hashStepsLabel->setText(found
                 ? QString("Хэш поиск: %1 шагов").arg(steps)
                 : QString("Хэш поиск: не найдено (%1 шагов)").arg(steps));
@@ -178,7 +179,7 @@ void MainWindow::studentCellChanged(int row, int column)
         return;
     }
 
-    students->remove(oldEntry.fio);
+    students->remove(oldEntry.fio, oldEntry.instrument);
     if (!students->insert(newEntry)) {
         QMessageBox::warning(this, "Редактировать ученика", "Такая запись уже существует");
         students->insert(oldEntry);
@@ -201,7 +202,7 @@ void MainWindow::studentContextMenu(const QPoint& pos)
         editStudent();
     } else if (chosen == remove) {
         Students_entry entry = students->getEntry(studentRowMap[row]);
-        students->remove(entry.fio);
+        students->remove(entry.fio, entry.instrument);
         refreshTables();
     }
 }

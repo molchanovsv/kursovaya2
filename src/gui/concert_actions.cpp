@@ -27,9 +27,10 @@ void MainWindow::addConcert()
 void MainWindow::removeConcert()
 {
     FIO f;
-    if (!fioDialog(f, nullptr, "Удалить концерт"))
+    std::string instr;
+    if (!fioInstrumentDialog(f, instr, nullptr, QString(), "Удалить концерт"))
         return;
-    concerts->remove(f);
+    concerts->remove(f, instr);
     refreshTables();
 }
 
@@ -46,7 +47,7 @@ void MainWindow::editConcert()
     if (!concertDialog(newEntry, &oldEntry))
         return;
 
-    concerts->remove(oldEntry.fio);
+    concerts->remove(oldEntry.fio, oldEntry.instrument);
     if (!concerts->insert(newEntry)) {
         QMessageBox::warning(this, "Редактировать концерт", "Такая запись уже существует");
         concerts->insert(oldEntry);
@@ -59,7 +60,7 @@ void MainWindow::searchConcert()
     dialog.setWindowTitle("Фильтр концертов");
     QFormLayout layout(&dialog);
 
-    QLineEdit sur, nam, pat, play, hall;
+    QLineEdit sur, nam, pat, instr, play, hall;
     QDateEdit date;
     QCheckBox dateCheck("Искать по дате?");
     date.setDisplayFormat("dd.MM.yyyy");
@@ -67,6 +68,7 @@ void MainWindow::searchConcert()
     sur.setText(cSurname);
     nam.setText(cName);
     pat.setText(cPatronymic);
+    instr.setText(cInstr);
     play.setText(cPlay);
     hall.setText(cHall);
     if (!cDate.isEmpty())
@@ -76,6 +78,7 @@ void MainWindow::searchConcert()
     layout.addRow("Фамилия", &sur);
     layout.addRow("Имя", &nam);
     layout.addRow("Отчество", &pat);
+    layout.addRow("Инструмент", &instr);
     layout.addRow("Пьеса", &play);
     layout.addRow("Зал", &hall);
     layout.addRow(&dateCheck);
@@ -103,14 +106,15 @@ void MainWindow::searchConcert()
         cName = nam.text();
         cPatronymic = pat.text();
         cPlay = play.text();
+        cInstr = instr.text();
         cHall = hall.text();
         cDate = date.date().isValid() ? date.date().toString("dd.MM.yyyy") : QString();
         cDateEnabled = dateCheck.isChecked();
-        if (!cSurname.isEmpty() && !cName.isEmpty() && !cPatronymic.isEmpty()) {
+        if (!cSurname.isEmpty() && !cName.isEmpty() && !cPatronymic.isEmpty() && !instr.text().isEmpty()) {
             FIO f{ cSurname.toStdString(), cName.toStdString(), cPatronymic.toStdString() };
             Concerts_entry tmp;
             int steps = 0;
-            bool found = concerts->find(f, tmp, steps);
+            bool found = concerts->find(f, instr.text().toStdString(), tmp, steps);
             ui->treeStepsLabel->setText(found
                 ? QString("Дерево поиск: %1 шагов").arg(steps)
                 : QString("Дерево поиск: не найдено (%1 шагов)").arg(steps));
@@ -118,7 +122,7 @@ void MainWindow::searchConcert()
             ui->treeStepsLabel->clear();
         }
         concertFilterActive = !(cSurname.isEmpty() && cName.isEmpty() && cPatronymic.isEmpty() &&
-                               cPlay.isEmpty() && cHall.isEmpty() && !(cDateEnabled && !cDate.isEmpty()));
+                               cInstr.isEmpty() && cPlay.isEmpty() && cHall.isEmpty() && !(cDateEnabled && !cDate.isEmpty()));
         ui->clearConcertSearchButton->setVisible(concertFilterActive);
         refreshTables();
     }
@@ -128,6 +132,7 @@ void MainWindow::clearConcertSearch()
     cSurname.clear();
     cName.clear();
     cPatronymic.clear();
+    cInstr.clear();
     cPlay.clear();
     cHall.clear();
     cDate.clear();
@@ -166,12 +171,14 @@ void MainWindow::concertCellChanged(int row, int column)
     newEntry.fio.surname = getText(0, oldEntry.fio.surname);
     newEntry.fio.name = getText(1, oldEntry.fio.name);
     newEntry.fio.patronymic = getText(2, oldEntry.fio.patronymic);
-    newEntry.play = getText(3, oldEntry.play);
-    newEntry.hall = getText(4, oldEntry.hall);
-    newEntry.date = getText(5, oldEntry.date);
+    newEntry.instrument = getText(3, oldEntry.instrument);
+    newEntry.play = getText(4, oldEntry.play);
+    newEntry.hall = getText(5, oldEntry.hall);
+    newEntry.date = getText(6, oldEntry.date);
 
-    if (newEntry.fio == oldEntry.fio && newEntry.play == oldEntry.play &&
-        newEntry.hall == oldEntry.hall && newEntry.date == oldEntry.date)
+    if (newEntry.fio == oldEntry.fio && newEntry.instrument == oldEntry.instrument &&
+        newEntry.play == oldEntry.play && newEntry.hall == oldEntry.hall &&
+        newEntry.date == oldEntry.date)
         return;
 
     QStringList errors;
@@ -191,7 +198,7 @@ void MainWindow::concertCellChanged(int row, int column)
         return;
     }
 
-    concerts->remove(oldEntry.fio);
+    concerts->remove(oldEntry.fio, oldEntry.instrument);
     if (!concerts->insert(newEntry)) {
         QMessageBox::warning(this, "Редактировать концерт", "Такая запись уже существует");
         concerts->insert(oldEntry);
@@ -212,7 +219,7 @@ void MainWindow::concertContextMenu(const QPoint& pos)
     if (chosen == edit) {
         editConcert();
     } else if (chosen == remove) {
-        concerts->remove(concertList[row].fio);
+        concerts->remove(concertList[row].fio, concertList[row].instrument);
         refreshTables();
     }
 }

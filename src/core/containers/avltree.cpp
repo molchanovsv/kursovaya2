@@ -4,7 +4,7 @@
 
 AVLTree::Node::Node(const Concerts_entry& entry)
     : data(entry), left(nullptr), right(nullptr), height(1) {
-    std::string fullName = entry.fio.surname + entry.fio.name + entry.fio.patronymic;
+    std::string fullName = entry.fio.surname + entry.fio.name + entry.fio.patronymic + entry.instrument;
     key = 0;
     for (unsigned char c : fullName) {
         key += static_cast<int>(c);
@@ -68,8 +68,8 @@ AVLTree::Node* AVLTree::insert(Node* node, const Concerts_entry& entry) {
     if (entry == node->data)
         return node;
 
-    std::string fullNameCurrent = node->data.fio.surname + node->data.fio.name + node->data.fio.patronymic;
-    std::string fullNameNew = entry.fio.surname + entry.fio.name + entry.fio.patronymic;
+    std::string fullNameCurrent = node->data.fio.surname + node->data.fio.name + node->data.fio.patronymic + node->data.instrument;
+    std::string fullNameNew = entry.fio.surname + entry.fio.name + entry.fio.patronymic + entry.instrument;
 
     if (fullNameNew < fullNameCurrent)
         node->left = insert(node->left, entry);
@@ -89,16 +89,16 @@ AVLTree::Node* AVLTree::removeMin(Node* node) {
 	return balance(node);
 }
 
-AVLTree::Node* AVLTree::remove(Node* node, const FIO& fio) {
+AVLTree::Node* AVLTree::remove(Node* node, const FIO& fio, const std::string& instrument) {
 	if (!node) return nullptr;
 
-	std::string fullNameCurrent = node->data.fio.surname + node->data.fio.name + node->data.fio.patronymic;
-	std::string fullNameToRemove = fio.surname + fio.name + fio.patronymic;
+        std::string fullNameCurrent = node->data.fio.surname + node->data.fio.name + node->data.fio.patronymic + node->data.instrument;
+        std::string fullNameToRemove = fio.surname + fio.name + fio.patronymic + instrument;
 
 	if (fullNameToRemove < fullNameCurrent)
-		node->left = remove(node->left, fio);
-	else if (fullNameToRemove > fullNameCurrent)
-		node->right = remove(node->right, fio);
+                node->left = remove(node->left, fio, instrument);
+        else if (fullNameToRemove > fullNameCurrent)
+                node->right = remove(node->right, fio, instrument);
 	else {
 		Node* left = node->left;
 		Node* right = node->right;
@@ -125,14 +125,15 @@ void AVLTree::clear(Node* node) {
 bool AVLTree::insert(const Concerts_entry& entry) {
     Concerts_entry existing;
     int dummy;
-    if (find(entry.fio, existing, dummy) && existing == entry)
+    if (find(entry.fio, entry.instrument, existing, dummy) &&
+        existing.fio == entry.fio && existing.instrument == entry.instrument)
         return false;
     root = insert(root, entry);
     return true;
 }
 
-void AVLTree::remove(const FIO& fio) {
-	root = remove(root, fio);
+void AVLTree::remove(const FIO& fio, const std::string& instrument) {
+        root = remove(root, fio, instrument);
 }
 
 
@@ -180,7 +181,7 @@ void AVLTree::fillTreeWidget(Node* node, QTreeWidgetItem* parent, QTreeWidget* t
                              const QString& prefix) const {
     if (!node) return;
     QString base = QString::fromStdString(node->data.fio.surname + " " + node->data.fio.name + " " +
-                                          node->data.fio.patronymic + " - " + node->data.play +
+                                          node->data.fio.patronymic + " - " + node->data.instrument + " - " + node->data.play +
                                           " - " + node->data.hall + " - " + node->data.date);
     QString text = prefix.isEmpty() ? base : prefix + base;
     QTreeWidgetItem* item;
@@ -196,6 +197,7 @@ void AVLTree::fillTreeWidget(Node* node, QTreeWidgetItem* parent, QTreeWidget* t
         highlight->fio.surname == node->data.fio.surname &&
         highlight->fio.name == node->data.fio.name &&
         highlight->fio.patronymic == node->data.fio.patronymic &&
+        highlight->instrument == node->data.instrument &&
         highlight->play == node->data.play &&
         highlight->hall == node->data.hall &&
         highlight->date == node->data.date) {
@@ -215,13 +217,13 @@ void AVLTree::buildTreeWidget(QTreeWidget* widget,
     widget->expandAll();
 }
 
-bool AVLTree::find(const FIO& fio, Concerts_entry& res, int& steps) const {
+bool AVLTree::find(const FIO& fio, const std::string& instrument, Concerts_entry& res, int& steps) const {
     Node* node = root;
-    std::string target = fio.surname + fio.name + fio.patronymic;
+    std::string target = fio.surname + fio.name + fio.patronymic + instrument;
     steps = 0;
     while (node) {
         ++steps;
-        std::string cur = node->data.fio.surname + node->data.fio.name + node->data.fio.patronymic;
+        std::string cur = node->data.fio.surname + node->data.fio.name + node->data.fio.patronymic + node->data.instrument;
         if (target == cur) {
             res = node->data;
             return true;
