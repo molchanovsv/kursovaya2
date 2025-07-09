@@ -59,5 +59,17 @@
     "highlight": "#55cc00",
     "highlightedtext": "#000000",
     "link": "#ffdd00"
+  },
+  "sans": {
+    "window": "#ffffff",
+    "windowtext": "#000000",
+    "base": "#e6f0ff",
+    "alternatebase": "#ffffff",
+    "text": "#000000",
+    "button": "#e6f0ff",
+    "buttontext": "#000000",
+    "highlight": "#2a82da",
+    "highlightedtext": "#ffffff",
+    "link": "#0000ff"
   }
 }
