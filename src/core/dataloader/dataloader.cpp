@@ -1,6 +1,5 @@
 #include "dataloader.h"
 #include <fstream>
-#include "fio.h"
 #include <QTextCodec>
 #include <QDebug>
 #include "validators.h"
