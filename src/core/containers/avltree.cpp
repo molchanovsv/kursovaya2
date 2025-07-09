@@ -176,13 +176,17 @@ std::vector<Concerts_entry> AVLTree::searchByDate(const std::string& date) const
 }
 
 void AVLTree::fillTreeWidget(Node* node, QTreeWidgetItem* parent, QTreeWidget* tree,
-                             const Concerts_entry* highlight,
-                             const QString& prefix) const {
+                             const Concerts_entry* highlight, int depth,
+                             const QString& branch) const {
     if (!node) return;
     QString base = QString::fromStdString(node->data.fio.surname + " " + node->data.fio.name + " " +
                                           node->data.fio.patronymic + " - " + node->data.instrument + " - " + node->data.play +
                                           " - " + node->data.hall + " - " + node->data.date);
-    QString text = prefix.isEmpty() ? base : prefix + base;
+    QString text;
+    if (depth == 0)
+        text = base;
+    else
+        text = QString(depth - 1, '\t') + branch + base;
     QTreeWidgetItem* item;
     if (parent)
         item = new QTreeWidgetItem(parent);
@@ -203,8 +207,8 @@ void AVLTree::fillTreeWidget(Node* node, QTreeWidgetItem* parent, QTreeWidget* t
         item->setBackground(0, QBrush(Qt::magenta));
     }
 
-    fillTreeWidget(node->left, item, tree, highlight, "L: ");
-    fillTreeWidget(node->right, item, tree, highlight, "R: ");
+    fillTreeWidget(node->left, item, tree, highlight, depth + 1, "L: ");
+    fillTreeWidget(node->right, item, tree, highlight, depth + 1, "R: ");
 }
 
 void AVLTree::buildTreeWidget(QTreeWidget* widget,
@@ -212,7 +216,7 @@ void AVLTree::buildTreeWidget(QTreeWidget* widget,
     if (!widget)
         return;
     widget->clear();
-    fillTreeWidget(root, nullptr, widget, highlight, "");
+    fillTreeWidget(root, nullptr, widget, highlight, 0, "");
     widget->expandAll();
 }
 
@@ -233,5 +237,26 @@ bool AVLTree::find(const FIO& fio, const std::string& instrument, Concerts_entry
             node = node->right;
     }
     return false;
+}
+
+void AVLTree::buildString(Node* node, QStringList& out, int depth, const QString& branch) const {
+    if (!node) return;
+    QString base = QString::fromStdString(node->data.fio.surname + " " + node->data.fio.name + " " +
+                                          node->data.fio.patronymic + " - " + node->data.instrument + " - " + node->data.play +
+                                          " - " + node->data.hall + " - " + node->data.date);
+    QString line;
+    if (depth == 0)
+        line = base;
+    else
+        line = QString(depth - 1, '\t') + branch + base;
+    out << line;
+    buildString(node->left, out, depth + 1, "L: ");
+    buildString(node->right, out, depth + 1, "R: ");
+}
+
+QString AVLTree::toString() const {
+    QStringList lines;
+    buildString(root, lines, 0, "");
+    return lines.join('\n');
 }
 
