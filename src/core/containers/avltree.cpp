@@ -1,5 +1,4 @@
 #include "avltree.h"
-#include <algorithm>
 #include <vector>
 
 AVLTree::Node::Node(const Concerts_entry& entry)

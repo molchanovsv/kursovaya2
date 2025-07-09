@@ -1,22 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QDateEdit>
-#include <QMessageBox>
-#include <QDialog>
-#include <QFormLayout>
 #include <QLineEdit>
-#include <QLabel>
-#include <QDialogButtonBox>
-#include <QTreeWidget>
-#include <QBrush>
-#include <QMenu>
-#include <QDate>
 #include <QCheckBox>
-#include <QFileDialog>
-#include <fstream>
 #include <vector>
-#include <array>
-#include "fio.h"
 
 MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree,
                        const QString& studFile, const QString& concFile,
@@ -172,7 +159,7 @@ void MainWindow::refreshTables()
         ui->concertsTable->setItem(i, 0, makeItem(QString::fromStdString(e.fio.surname)));
         ui->concertsTable->setItem(i, 1, makeItem(QString::fromStdString(e.fio.name)));
         ui->concertsTable->setItem(i, 2, makeItem(QString::fromStdString(e.fio.patronymic)));
-        ui->concertsTable->setItem(i, 3, makeItem(instrC));
+        ui->concertsTable->setItem(i, 3, makeItem(QString::fromStdString(e.instrument)));
         ui->concertsTable->setItem(i, 4, makeItem(QString::fromStdString(e.play)));
         ui->concertsTable->setItem(i, 5, makeItem(QString::fromStdString(e.hall)));
         ui->concertsTable->setItem(i, 6, makeItem(QString::fromStdString(e.date)));
