@@ -7,6 +7,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QHash>
+#include <QFont>
 
 namespace {
 QJsonObject loadThemes()
@@ -51,6 +52,7 @@ Theme themeFromString(const QString& name) {
     if (n == "sonic") return Theme::Sonic;
     if (n == "gojo" || n == "gojosatoru") return Theme::GojoSatoru;
     if (n == "marisa" || n == "marisawriggle") return Theme::MarisaWriggle;
+    if (n == "sans") return Theme::Sans;
 
     return Theme::Dark;
 }
@@ -61,6 +63,7 @@ QString themeToString(Theme t) {
     case Theme::Sonic: return "sonic";
     case Theme::GojoSatoru: return "gojo";
     case Theme::MarisaWriggle: return "marisa";
+    case Theme::Sans: return "sans";
     default: return "dark";
     }
 }
@@ -77,5 +80,9 @@ void applyTheme(Theme t, QApplication& app) {
             p.setColor(role, color);
     }
     app.setPalette(p);
+    if (t == Theme::Sans)
+        app.setFont(QFont("Comic Sans MS"));
+    else
+        app.setFont(QFont());
 }
 

@@ -37,6 +37,9 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree,
     QAction* marisaAct = settingsMenu->addAction("\320\234\320\260\321\200\320\270\321\201\321\213 \320\232\320\270\321\200\320\270\321\201\320\260\320\274\320\265 \320\270 Wriggle Nightbug");
     marisaAct->setCheckable(true);
     marisaAct->setActionGroup(themeGroup);
+    QAction* sansAct = settingsMenu->addAction("\320\241\320\260\320\275\321\201");
+    sansAct->setCheckable(true);
+    sansAct->setActionGroup(themeGroup);
     QSettings set;
     Theme current = themeFromString(set.value("theme", "dark").toString());
     switch (current) {
@@ -44,6 +47,7 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree,
     case Theme::Sonic: sonicAct->setChecked(true); break;
     case Theme::GojoSatoru: gojoAct->setChecked(true); break;
     case Theme::MarisaWriggle: marisaAct->setChecked(true); break;
+    case Theme::Sans: sansAct->setChecked(true); break;
     default: darkAct->setChecked(true); break;
     }
     auto apply = [](Theme t){
@@ -55,6 +59,7 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree,
     connect(sonicAct, &QAction::triggered, this, [=]{ apply(Theme::Sonic); });
     connect(gojoAct, &QAction::triggered, this, [=]{ apply(Theme::GojoSatoru); });
     connect(marisaAct, &QAction::triggered, this, [=]{ apply(Theme::MarisaWriggle); });
+    connect(sansAct, &QAction::triggered, this, [=]{ apply(Theme::Sans); });
     connect(ui->addStudentButton, &QPushButton::clicked, this, &MainWindow::addStudent);
     connect(ui->removeStudentButton, &QPushButton::clicked, this, &MainWindow::removeStudent);
     connect(ui->editStudentButton, &QPushButton::clicked, this, &MainWindow::editStudent);
@@ -83,6 +88,7 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree,
     connect(ui->dateFilterCheck, &QCheckBox::toggled, this, &MainWindow::updateReport);
     ui->concertTree->setHeaderHidden(true);
     ui->reportTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->studentsVectorTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->studentsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->concertsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->reportTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -90,6 +96,8 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree,
     ui->mainSplitter->setStretchFactor(1, 1);
     ui->concertsSplitter->setStretchFactor(0, 1);
     ui->concertsSplitter->setStretchFactor(1, 1);
+    ui->verticalLayout->setStretch(0, 0);
+    ui->verticalLayout->setStretch(1, 1);
     refreshTables();
     updateConcertTree();
 }
