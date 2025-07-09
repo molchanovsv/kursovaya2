@@ -11,8 +11,8 @@ HashTable::~HashTable() {
     delete[] table;
 }
 
-int HashTable::calculateKey(const FIO& fio) const {
-    std::string fullName = fio.surname + fio.name + fio.patronymic;
+int HashTable::calculateKey(const FIO& fio, const std::string& instrument) const {
+    std::string fullName = fio.surname + fio.name + fio.patronymic + instrument;
     int key = 0;
     for (unsigned char c : fullName) {
         key += static_cast<int>(c);
@@ -32,7 +32,7 @@ void HashTable::resize(int newSize) {
     int activeCount = 0;
     for (int i = 0; i < fullSize; ++i) {
         if (table[i].status == 1) {
-            int key = calculateKey(table[i].record.fio);
+            int key = calculateKey(table[i].record.fio, table[i].record.instrument);
             int j = 0;
             int index;
             do {
@@ -62,11 +62,12 @@ void HashTable::checkResize() {
 
 bool HashTable::insert(const Students_entry& record) {
     Students_entry existing;
-    if (find(record.fio, existing) && existing == record)
+    if (find(record.fio, record.instrument, existing) &&
+        existing.fio == record.fio && existing.instrument == record.instrument)
         return false;
 
     checkResize();
-    int key = calculateKey(record.fio);
+    int key = calculateKey(record.fio, record.instrument);
     int j = 0;
     int index;
     do {
@@ -82,8 +83,8 @@ bool HashTable::insert(const Students_entry& record) {
     return false;
 }
 
-bool HashTable::remove(const FIO& fio) {
-    int key = calculateKey(fio);
+bool HashTable::remove(const FIO& fio, const std::string& instrument) {
+    int key = calculateKey(fio, instrument);
     int j = 0;
     int index;
     do {
@@ -94,7 +95,8 @@ bool HashTable::remove(const FIO& fio) {
         if (table[index].status == 1 &&
             table[index].record.fio.surname == fio.surname &&
             table[index].record.fio.name == fio.name &&
-            table[index].record.fio.patronymic == fio.patronymic) {
+            table[index].record.fio.patronymic == fio.patronymic &&
+            table[index].record.instrument == instrument) {
             table[index].status = 2;
             --size;
             checkResize();
@@ -106,13 +108,13 @@ bool HashTable::remove(const FIO& fio) {
 }
 
 
-bool HashTable::find(const FIO& fio, Students_entry& res) const {
+bool HashTable::find(const FIO& fio, const std::string& instrument, Students_entry& res) const {
     int dummy;
-    return find(fio, res, dummy);
+    return find(fio, instrument, res, dummy);
 }
 
-bool HashTable::find(const FIO& fio, Students_entry& res, int& steps) const {
-    int key = calculateKey(fio);
+bool HashTable::find(const FIO& fio, const std::string& instrument, Students_entry& res, int& steps) const {
+    int key = calculateKey(fio, instrument);
     int j = 0;
     int index;
     steps = 0;
@@ -125,7 +127,8 @@ bool HashTable::find(const FIO& fio, Students_entry& res, int& steps) const {
         if (table[index].status == 1 &&
             table[index].record.fio.surname == fio.surname &&
             table[index].record.fio.name == fio.name &&
-            table[index].record.fio.patronymic == fio.patronymic) {
+            table[index].record.fio.patronymic == fio.patronymic &&
+            table[index].record.instrument == instrument) {
             res = table[index].record;
             return true;
         }

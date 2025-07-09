@@ -132,6 +132,7 @@ void MainWindow::refreshTables()
         QString sur = QString::fromStdString(e.fio.surname);
         QString nam = QString::fromStdString(e.fio.name);
         QString pat = QString::fromStdString(e.fio.patronymic);
+        QString instrC = QString::fromStdString(e.instrument);
         QString play = QString::fromStdString(e.play);
         QString hall = QString::fromStdString(e.hall);
         QString date = QString::fromStdString(e.date);
@@ -154,9 +155,9 @@ void MainWindow::refreshTables()
     ui->concertsTable->blockSignals(true);
     ui->concertsTable->clearContents();
     ui->concertsTable->setRowCount(0);
-    ui->concertsTable->setColumnCount(6);
+    ui->concertsTable->setColumnCount(7);
     QStringList headers;
-    headers << "Фамилия" << "Имя" << "Отчество" << "Пьеса" << "Зал" << "Дата";
+    headers << "Фамилия" << "Имя" << "Отчество" << "Инструмент" << "Пьеса" << "Зал" << "Дата";
     ui->concertsTable->setHorizontalHeaderLabels(headers);
     int count = static_cast<int>(concertList.size());
     for (int i = 0; i < count; ++i) {
@@ -171,9 +172,10 @@ void MainWindow::refreshTables()
         ui->concertsTable->setItem(i, 0, makeItem(QString::fromStdString(e.fio.surname)));
         ui->concertsTable->setItem(i, 1, makeItem(QString::fromStdString(e.fio.name)));
         ui->concertsTable->setItem(i, 2, makeItem(QString::fromStdString(e.fio.patronymic)));
-        ui->concertsTable->setItem(i, 3, makeItem(QString::fromStdString(e.play)));
-        ui->concertsTable->setItem(i, 4, makeItem(QString::fromStdString(e.hall)));
-        ui->concertsTable->setItem(i, 5, makeItem(QString::fromStdString(e.date)));
+        ui->concertsTable->setItem(i, 3, makeItem(instrC));
+        ui->concertsTable->setItem(i, 4, makeItem(QString::fromStdString(e.play)));
+        ui->concertsTable->setItem(i, 5, makeItem(QString::fromStdString(e.hall)));
+        ui->concertsTable->setItem(i, 6, makeItem(QString::fromStdString(e.date)));
     }
     ui->concertsTable->blockSignals(false);
     updateConcertTree();

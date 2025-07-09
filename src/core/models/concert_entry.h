@@ -6,13 +6,14 @@
 
 struct Concerts_entry {
     FIO fio;
+    std::string instrument;
     std::string play;
     std::string hall;
     std::string date;
 
     bool operator==(const Concerts_entry& other) const {
-        return fio == other.fio && play == other.play && hall == other.hall &&
-               date == other.date;
+        return fio == other.fio && instrument == other.instrument &&
+               play == other.play && hall == other.hall && date == other.date;
     }
 };
 

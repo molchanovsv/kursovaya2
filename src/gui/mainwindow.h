@@ -54,13 +54,16 @@ private:
     bool studentFilterActive = false;
     QString sSurname, sName, sPatronymic, sInstr, sTeacher;
     bool concertFilterActive = false;
-    QString cSurname, cName, cPatronymic, cPlay, cHall;
+    QString cSurname, cName, cPatronymic, cInstr, cPlay, cHall;
     QString cDate;
     bool cDateEnabled = false;
 
     bool studentDialog(Students_entry& out, const Students_entry* initial = nullptr);
     bool concertDialog(Concerts_entry& out, const Concerts_entry* initial = nullptr);
     bool fioDialog(FIO& out, const FIO* initial = nullptr, const QString& title = "Enter FIO");
+    bool fioInstrumentDialog(FIO& fio, std::string& instrument,
+                             const FIO* initial = nullptr, const QString& instr = QString(),
+                             const QString& title = "Enter FIO and instrument");
     bool validateFIO(const QString& surname, const QString& name, const QString& patronymic) const;
     bool validateWord(const QString& word) const;
     bool validateInstrument(const QString& instrument) const;

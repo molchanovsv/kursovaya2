@@ -87,11 +87,12 @@ bool MainWindow::concertDialog(Concerts_entry& out, const Concerts_entry* initia
         layout.addRow(&currentLabel);
     }
 
-    QLineEdit surname, name, patronymic, play, hall, date;
+    QLineEdit surname, name, patronymic, instrument, play, hall, date;
     if (initial) {
         surname.setText(QString::fromStdString(initial->fio.surname));
         name.setText(QString::fromStdString(initial->fio.name));
         patronymic.setText(QString::fromStdString(initial->fio.patronymic));
+        instrument.setText(QString::fromStdString(initial->instrument));
         play.setText(QString::fromStdString(initial->play));
         hall.setText(QString::fromStdString(initial->hall));
         date.setText(QString::fromStdString(initial->date));
@@ -100,6 +101,7 @@ bool MainWindow::concertDialog(Concerts_entry& out, const Concerts_entry* initia
     layout.addRow("Фамилия", &surname);
     layout.addRow("Имя", &name);
     layout.addRow("Отчество", &patronymic);
+    layout.addRow("Инструмент", &instrument);
     layout.addRow("Пьеса", &play);
     layout.addRow("Зал", &hall);
     layout.addRow("Дата", &date);
@@ -113,6 +115,8 @@ bool MainWindow::concertDialog(Concerts_entry& out, const Concerts_entry* initia
         QStringList errors;
         if (!validateFIO(surname.text(), name.text(), patronymic.text()))
             errors << "FIO";
+        if (!validateInstrument(instrument.text()))
+            errors << "instrument";
         if (!validateHall(hall.text()))
             errors << "hall";
         if (!validateDate(date.text()))
@@ -127,6 +131,7 @@ bool MainWindow::concertDialog(Concerts_entry& out, const Concerts_entry* initia
         out.fio.surname = surname.text().toStdString();
         out.fio.name = name.text().toStdString();
         out.fio.patronymic = patronymic.text().toStdString();
+        out.instrument = instrument.text().toStdString();
         out.play = play.text().toStdString();
         out.hall = hall.text().toStdString();
         out.date = date.text().toStdString();
@@ -175,6 +180,52 @@ bool MainWindow::fioDialog(FIO& out, const FIO* initial, const QString& title)
         out.surname = surname.text().toStdString();
         out.name = name.text().toStdString();
         out.patronymic = patronymic.text().toStdString();
+        return true;
+    }
+    return false;
+}
+
+bool MainWindow::fioInstrumentDialog(FIO& fio, std::string& instrument,
+                                     const FIO* initial, const QString& instr,
+                                     const QString& title)
+{
+    QDialog dialog(this);
+    dialog.setWindowTitle(title);
+    QFormLayout layout(&dialog);
+
+    QLineEdit surname, name, patronymic, instrEdit;
+    if (initial) {
+        surname.setText(QString::fromStdString(initial->surname));
+        name.setText(QString::fromStdString(initial->name));
+        patronymic.setText(QString::fromStdString(initial->patronymic));
+    }
+    instrEdit.setText(instr);
+
+    layout.addRow("Фамилия", &surname);
+    layout.addRow("Имя", &name);
+    layout.addRow("Отчество", &patronymic);
+    layout.addRow("Инструмент", &instrEdit);
+
+    QDialogButtonBox buttons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    layout.addRow(&buttons);
+    connect(&buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(&buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        QStringList errors;
+        if (!validateWord(surname.text())) errors << "surname";
+        if (!validateWord(name.text())) errors << "name";
+        if (!validateWord(patronymic.text())) errors << "patronymic";
+        if (!validateInstrument(instrEdit.text())) errors << "instrument";
+        if (!errors.isEmpty()) {
+            QMessageBox::warning(this, "Input Error",
+                                 QString("Invalid: %1").arg(errors.join(", ")));
+            return false;
+        }
+        fio.surname = surname.text().toStdString();
+        fio.name = name.text().toStdString();
+        fio.patronymic = patronymic.text().toStdString();
+        instrument = instrEdit.text().toStdString();
         return true;
     }
     return false;
