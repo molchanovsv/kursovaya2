@@ -47,5 +47,17 @@
     "buttontext": "#000000",
     "highlight": "#00aaff",
     "highlightedtext": "#ffffff"
+  },
+  "marisa": {
+    "window": "#334433",
+    "windowtext": "#ffffff",
+    "base": "#112211",
+    "alternatebase": "#334433",
+    "text": "#ffffff",
+    "button": "#334433",
+    "buttontext": "#ffffff",
+    "highlight": "#55cc00",
+    "highlightedtext": "#000000",
+    "link": "#ffdd00"
   }
 }

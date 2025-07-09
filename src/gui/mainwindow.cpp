@@ -32,12 +32,16 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree,
     QAction* gojoAct = settingsMenu->addAction("\320\223\320\276\320\264\320\266\320\276 \320\241\320\260\321\202\320\276\321\200\321\203");
     gojoAct->setCheckable(true);
     gojoAct->setActionGroup(themeGroup);
+    QAction* marisaAct = settingsMenu->addAction("\320\234\320\260\321\200\320\270\321\201\321\213 \320\232\320\270\321\200\320\270\321\201\320\260\320\274\320\265 \320\270 Wriggle Nightbug");
+    marisaAct->setCheckable(true);
+    marisaAct->setActionGroup(themeGroup);
     QSettings set;
     Theme current = themeFromString(set.value("theme", "dark").toString());
     switch (current) {
     case Theme::Madagascar: madAct->setChecked(true); break;
     case Theme::Sonic: sonicAct->setChecked(true); break;
     case Theme::GojoSatoru: gojoAct->setChecked(true); break;
+    case Theme::MarisaWriggle: marisaAct->setChecked(true); break;
     default: darkAct->setChecked(true); break;
     }
     auto apply = [](Theme t){
@@ -48,6 +52,7 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree,
     connect(madAct, &QAction::triggered, this, [=]{ apply(Theme::Madagascar); });
     connect(sonicAct, &QAction::triggered, this, [=]{ apply(Theme::Sonic); });
     connect(gojoAct, &QAction::triggered, this, [=]{ apply(Theme::GojoSatoru); });
+    connect(marisaAct, &QAction::triggered, this, [=]{ apply(Theme::MarisaWriggle); });
     connect(ui->addStudentButton, &QPushButton::clicked, this, &MainWindow::addStudent);
     connect(ui->removeStudentButton, &QPushButton::clicked, this, &MainWindow::removeStudent);
     connect(ui->editStudentButton, &QPushButton::clicked, this, &MainWindow::editStudent);

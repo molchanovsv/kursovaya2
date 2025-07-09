@@ -14,6 +14,7 @@
 #include <QIcon>
 #include <QSettings>
 #include <memory>
+#include <limits>
 
 int main(int argc, char *argv[])
 {
@@ -34,6 +35,7 @@ int main(int argc, char *argv[])
     concEdit.setText(settings.value("lastConcertFile").toString());
     QSpinBox hashSizeSpin;
     hashSizeSpin.setMinimum(1);
+    hashSizeSpin.setMaximum(std::numeric_limits<int>::max());
     QPushButton browseStud("...");
     QPushButton browseConc("...");
     QWidget studRow, concRow;
