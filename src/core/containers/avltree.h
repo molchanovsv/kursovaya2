@@ -4,6 +4,7 @@
 #include "concert_entry.h"
 #include <vector>
 #include <QTreeWidget>
+#include <QStringList>
 
 class AVLTree {
 private:
@@ -34,7 +35,11 @@ private:
     void searchHall(Node* node, const std::string& hall, std::vector<Concerts_entry>& vec) const;
     void searchDate(Node* node, const std::string& date, std::vector<Concerts_entry>& vec) const;
     void fillTreeWidget(Node* node, QTreeWidgetItem* item, QTreeWidget* tree,
-                        const Concerts_entry* highlight, const QString& prefix) const;
+                        const Concerts_entry* highlight, int depth,
+                        const QString& branch) const;
+
+    void buildString(Node* node, QStringList& out, int depth,
+                     const QString& branch) const;
 
 public:
     AVLTree();
@@ -48,6 +53,7 @@ public:
     void buildTreeWidget(QTreeWidget* widget,
                          const Concerts_entry* highlight = nullptr) const;
     bool find(const FIO& fio, const std::string& instrument, Concerts_entry& res, int& steps) const;
+    QString toString() const;
 };
 
 #endif
