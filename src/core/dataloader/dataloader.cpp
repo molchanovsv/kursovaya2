@@ -121,16 +121,19 @@ namespace DataLoader {
         return entries;
     }
 
-    bool validateStudentsFile(const std::string& filename, int& count, std::string& error) {
+    bool validateStudentsFile(const std::string& filename, int& count,
+                              std::string& error, int& line) {
         std::ifstream in(filename);
         if (!in.is_open()) {
             error = "Не удалось открыть файл студентов";
+            line = -1;
             return false;
         }
 
         std::string tmp;
         count = 0;
         while (in >> tmp) {
+            line = count + 1;
             Students_entry rec;
             rec.fio.surname = decodeCp1251(tmp);
             if (!(in >> tmp)) { error = "Файл студентов имеет неверный формат"; return false; }
@@ -154,21 +157,26 @@ namespace DataLoader {
 
         if (count == 0) {
             error = "Файл студентов пуст или имеет неверный формат";
+            line = 0;
             return false;
         }
+        line = 0;
         return true;
     }
 
-    bool validateConcertsFile(const std::string& filename, std::string& error) {
+    bool validateConcertsFile(const std::string& filename,
+                              std::string& error, int& line) {
         std::ifstream in(filename);
         if (!in.is_open()) {
             error = "Не удалось открыть файл концертов";
+            line = -1;
             return false;
         }
 
         std::string word;
         int count = 0;
         while (in >> word) {
+            line = count + 1;
             Concerts_entry e;
             e.fio.surname = decodeCp1251(word);
             if (!(in >> word)) { error = "Файл концертов имеет неверный формат"; return false; }
@@ -201,8 +209,10 @@ namespace DataLoader {
 
         if (count == 0) {
             error = "Файл концертов пуст или имеет неверный формат";
+            line = 0;
             return false;
         }
+        line = 0;
         return true;
     }
 }

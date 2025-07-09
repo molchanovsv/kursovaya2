@@ -3,6 +3,11 @@
 #include <QDateEdit>
 #include <QLineEdit>
 #include <QCheckBox>
+#include <QApplication>
+#include <QMenu>
+#include <QActionGroup>
+#include <QSettings>
+#include "theme.h"
 #include <vector>
 
 MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree,
@@ -12,6 +17,32 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree,
       studentFile(studFile), concertFile(concFile)
 {
     ui->setupUi(this);
+
+    QMenu* settingsMenu = menuBar()->addMenu("\320\235\320\260\321\201\321\202\321\200\320\276\320\271\320\272\320\270");
+    QActionGroup* themeGroup = new QActionGroup(this);
+    QAction* darkAct = settingsMenu->addAction("\320\242\321\217\320\274\320\275\320\260\321\217");
+    darkAct->setCheckable(true);
+    darkAct->setActionGroup(themeGroup);
+    QAction* lightAct = settingsMenu->addAction("\320\221\320\265\320\273\320\260\321\217");
+    lightAct->setCheckable(true);
+    lightAct->setActionGroup(themeGroup);
+    QAction* madAct = settingsMenu->addAction("\320\234\320\260\320\264\320\260\320\263\320\260\321\201\320\272\320\260\321\200");
+    madAct->setCheckable(true);
+    madAct->setActionGroup(themeGroup);
+    QSettings set;
+    Theme current = themeFromString(set.value("theme", "dark").toString());
+    switch (current) {
+    case Theme::Light: lightAct->setChecked(true); break;
+    case Theme::Madagascar: madAct->setChecked(true); break;
+    default: darkAct->setChecked(true); break;
+    }
+    auto apply = [](Theme t){
+        applyTheme(t, *qApp);
+        QSettings s; s.setValue("theme", themeToString(t));
+    };
+    connect(darkAct, &QAction::triggered, this, [=]{ apply(Theme::Dark); });
+    connect(lightAct, &QAction::triggered, this, [=]{ apply(Theme::Light); });
+    connect(madAct, &QAction::triggered, this, [=]{ apply(Theme::Madagascar); });
     connect(ui->addStudentButton, &QPushButton::clicked, this, &MainWindow::addStudent);
     connect(ui->removeStudentButton, &QPushButton::clicked, this, &MainWindow::removeStudent);
     connect(ui->editStudentButton, &QPushButton::clicked, this, &MainWindow::editStudent);

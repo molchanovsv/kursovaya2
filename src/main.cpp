@@ -10,6 +10,7 @@
 #include <QSpinBox>
 #include "mainwindow.h"
 #include "dataloader.h"
+#include "gui/theme.h"
 #include <QIcon>
 #include <QSettings>
 #include <memory>
@@ -22,6 +23,8 @@ int main(int argc, char *argv[])
 
     QCoreApplication::setOrganizationName("MusicSchool");
     QSettings settings;
+    Theme theme = themeFromString(settings.value("theme", "dark").toString());
+    applyTheme(theme, app);
 
     QDialog fileDialog;
     fileDialog.setWindowTitle("Выбор файлов");
@@ -63,18 +66,26 @@ int main(int argc, char *argv[])
         bool ok = true;
         std::string err;
         int studCount = 0;
+        int lineStu = 0;
+        int lineConc = 0;
 
         if (studEdit.text().isEmpty()) {
             msg = "Укажите файл студентов";
             ok = false;
-        } else if (!DataLoader::validateStudentsFile(studEdit.text().toStdString(), studCount, err)) {
-            msg = QString::fromStdString(err);
+        } else if (!DataLoader::validateStudentsFile(studEdit.text().toStdString(), studCount, err, lineStu)) {
+            if (lineStu > 0)
+                msg = QString("Студенты: строка %1: %2").arg(lineStu).arg(QString::fromStdString(err));
+            else
+                msg = QString::fromStdString(err);
             ok = false;
         } else if (concEdit.text().isEmpty()) {
             msg = "Укажите файл концертов";
             ok = false;
-        } else if (!DataLoader::validateConcertsFile(concEdit.text().toStdString(), err)) {
-            msg = QString::fromStdString(err);
+        } else if (!DataLoader::validateConcertsFile(concEdit.text().toStdString(), err, lineConc)) {
+            if (lineConc > 0)
+                msg = QString("Концерты: строка %1: %2").arg(lineConc).arg(QString::fromStdString(err));
+            else
+                msg = QString::fromStdString(err);
             ok = false;
         }
 
@@ -107,7 +118,8 @@ int main(int argc, char *argv[])
 
     int count = 0;
     std::string err;
-    DataLoader::validateStudentsFile(studEdit.text().toStdString(), count, err);
+    int dummyLine = 0;
+    DataLoader::validateStudentsFile(studEdit.text().toStdString(), count, err, dummyLine);
     auto records = DataLoader::loadStudents(count, count, studEdit.text().toStdString());
     auto table = std::make_unique<HashTable>(hashSizeSpin.value());
     for(int i=0;i<count && i < static_cast<int>(records.size()); ++i)
