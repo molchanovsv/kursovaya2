@@ -1,0 +1,51 @@
+{
+  "dark": {
+    "window": "#353535",
+    "windowtext": "#ffffff",
+    "base": "#191919",
+    "alternatebase": "#353535",
+    "tooltipbase": "#ffffff",
+    "tooltiptext": "#ffffff",
+    "text": "#ffffff",
+    "button": "#353535",
+    "buttontext": "#ffffff",
+    "brighttext": "#ff0000",
+    "link": "#2a82da",
+    "highlight": "#2a82da",
+    "highlightedtext": "#000000"
+  },
+  "madagascar": {
+    "window": "#f4a460",
+    "windowtext": "#000000",
+    "base": "#ffe4b5",
+    "alternatebase": "#f4a460",
+    "text": "#000000",
+    "button": "#fa8072",
+    "buttontext": "#000000",
+    "highlight": "#3cb371",
+    "highlightedtext": "#000000"
+  },
+  "sonic": {
+    "window": "#2066ca",
+    "windowtext": "#ffffff",
+    "base": "#0f3c96",
+    "alternatebase": "#2066ca",
+    "text": "#ffffff",
+    "button": "#2066ca",
+    "buttontext": "#ffffff",
+    "highlight": "#ff0000",
+    "highlightedtext": "#ffffff",
+    "link": "#ffff00"
+  },
+  "gojo": {
+    "window": "#dcdcff",
+    "windowtext": "#000000",
+    "base": "#f0f0ff",
+    "alternatebase": "#dcdcff",
+    "text": "#000000",
+    "button": "#c8c8ff",
+    "buttontext": "#000000",
+    "highlight": "#00aaff",
+    "highlightedtext": "#ffffff"
+  }
+}

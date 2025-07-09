@@ -3,6 +3,11 @@
 #include <QDateEdit>
 #include <QLineEdit>
 #include <QCheckBox>
+#include <QApplication>
+#include <QMenu>
+#include <QActionGroup>
+#include <QSettings>
+#include "theme.h"
 #include <vector>
 
 MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree,
@@ -12,6 +17,37 @@ MainWindow::MainWindow(HashTable* studentsTable, AVLTree* concertTree,
       studentFile(studFile), concertFile(concFile)
 {
     ui->setupUi(this);
+
+    QMenu* settingsMenu = menuBar()->addMenu("\320\235\320\260\321\201\321\202\321\200\320\276\320\271\320\272\320\270");
+    QActionGroup* themeGroup = new QActionGroup(this);
+    QAction* darkAct = settingsMenu->addAction("\320\242\321\217\320\274\320\275\320\260\321\217");
+    darkAct->setCheckable(true);
+    darkAct->setActionGroup(themeGroup);
+    QAction* madAct = settingsMenu->addAction("\320\234\320\260\320\264\320\260\320\263\320\260\321\201\320\272\320\260\321\200");
+    madAct->setCheckable(true);
+    madAct->setActionGroup(themeGroup);
+    QAction* sonicAct = settingsMenu->addAction("\320\241\320\276\320\275\320\270\320\272");
+    sonicAct->setCheckable(true);
+    sonicAct->setActionGroup(themeGroup);
+    QAction* gojoAct = settingsMenu->addAction("\320\223\320\276\320\264\320\266\320\276 \320\241\320\260\321\202\320\276\321\200\321\203");
+    gojoAct->setCheckable(true);
+    gojoAct->setActionGroup(themeGroup);
+    QSettings set;
+    Theme current = themeFromString(set.value("theme", "dark").toString());
+    switch (current) {
+    case Theme::Madagascar: madAct->setChecked(true); break;
+    case Theme::Sonic: sonicAct->setChecked(true); break;
+    case Theme::GojoSatoru: gojoAct->setChecked(true); break;
+    default: darkAct->setChecked(true); break;
+    }
+    auto apply = [](Theme t){
+        applyTheme(t, *qApp);
+        QSettings s; s.setValue("theme", themeToString(t));
+    };
+    connect(darkAct, &QAction::triggered, this, [=]{ apply(Theme::Dark); });
+    connect(madAct, &QAction::triggered, this, [=]{ apply(Theme::Madagascar); });
+    connect(sonicAct, &QAction::triggered, this, [=]{ apply(Theme::Sonic); });
+    connect(gojoAct, &QAction::triggered, this, [=]{ apply(Theme::GojoSatoru); });
     connect(ui->addStudentButton, &QPushButton::clicked, this, &MainWindow::addStudent);
     connect(ui->removeStudentButton, &QPushButton::clicked, this, &MainWindow::removeStudent);
     connect(ui->editStudentButton, &QPushButton::clicked, this, &MainWindow::editStudent);
