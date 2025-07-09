@@ -23,7 +23,8 @@
     "button": "#fa8072",
     "buttontext": "#000000",
     "highlight": "#3cb371",
-    "highlightedtext": "#000000"
+    "highlightedtext": "#000000",
+    "font": "Verdana"
   },
   "sonic": {
     "window": "#2066ca",
@@ -35,29 +36,32 @@
     "buttontext": "#ffffff",
     "highlight": "#ff0000",
     "highlightedtext": "#ffffff",
-    "link": "#ffff00"
+    "link": "#ffff00",
+    "font": "Arial"
   },
   "gojo": {
-    "window": "#dcdcff",
+    "window": "#e8e0ff",
     "windowtext": "#000000",
-    "base": "#f0f0ff",
-    "alternatebase": "#dcdcff",
+    "base": "#f6f2ff",
+    "alternatebase": "#e8e0ff",
     "text": "#000000",
-    "button": "#c8c8ff",
+    "button": "#d6ccff",
     "buttontext": "#000000",
-    "highlight": "#00aaff",
-    "highlightedtext": "#ffffff"
+    "highlight": "#8060ff",
+    "highlightedtext": "#ffffff",
+    "link": "#ff6666",
+    "font": "Courier New"
   },
-  "marisa": {
-    "window": "#334433",
-    "windowtext": "#ffffff",
-    "base": "#112211",
-    "alternatebase": "#334433",
-    "text": "#ffffff",
-    "button": "#334433",
-    "buttontext": "#ffffff",
-    "highlight": "#55cc00",
-    "highlightedtext": "#000000",
-    "link": "#ffdd00"
+  "sans": {
+    "window": "#f0f8ff",
+    "windowtext": "#000000",
+    "base": "#e0efff",
+    "alternatebase": "#f0f8ff",
+    "text": "#000000",
+    "button": "#d0e0ff",
+    "buttontext": "#000000",
+    "highlight": "#1f5fd2",
+    "highlightedtext": "#ffffff",
+    "link": "#1a0eff"
   }
 }
