@@ -5,6 +5,7 @@
 #include "hashtable.h"
 #include "avltree.h"
 #include "theme.h"
+#include "student_entry.h"
 #include <vector>
 #include <QString>
 
@@ -16,6 +17,7 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 public:
     explicit MainWindow(HashTable* students, AVLTree* concerts,
+                        const std::vector<Students_entry>& rawStudents,
                         const QString& studFile, const QString& concFile,
                         QWidget* parent = nullptr);
     ~MainWindow();
@@ -47,6 +49,7 @@ private:
     HashTable* students;
     AVLTree* concerts;
     std::vector<int> studentRowMap;
+    std::vector<Students_entry> studentList;
     std::vector<Concerts_entry> concertList;
     QString studentFile;
     QString concertFile;
