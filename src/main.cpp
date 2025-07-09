@@ -11,6 +11,7 @@
 #include "mainwindow.h"
 #include "dataloader.h"
 #include <QIcon>
+#include <QSettings>
 #include <memory>
 
 int main(int argc, char *argv[])
@@ -19,10 +20,15 @@ int main(int argc, char *argv[])
     app.setApplicationName("База Данных Музыкальной Школы");
     app.setWindowIcon(QIcon(":/app.ico"));
 
+    QCoreApplication::setOrganizationName("MusicSchool");
+    QSettings settings;
+
     QDialog fileDialog;
     fileDialog.setWindowTitle("Выбор файлов");
     QFormLayout layout(&fileDialog);
     QLineEdit studEdit, concEdit;
+    studEdit.setText(settings.value("lastStudentFile").toString());
+    concEdit.setText(settings.value("lastConcertFile").toString());
     QSpinBox hashSizeSpin;
     hashSizeSpin.setMinimum(1);
     QPushButton browseStud("...");
@@ -86,6 +92,9 @@ int main(int argc, char *argv[])
     QObject::connect(&buttons, &QDialogButtonBox::rejected, &fileDialog, &QDialog::reject);
     if (fileDialog.exec() != QDialog::Accepted)
         return 0;
+
+    settings.setValue("lastStudentFile", studEdit.text());
+    settings.setValue("lastConcertFile", concEdit.text());
 
     int count = 0;
     std::string err;
