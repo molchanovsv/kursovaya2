@@ -10,6 +10,11 @@
 #include <QFont>
 
 namespace {
+QFont& defaultFont()
+{
+    static QFont f;
+    return f;
+}
 QJsonObject loadThemes()
 {
     QFile f(":/themes.json");
@@ -70,6 +75,9 @@ void applyTheme(Theme t, QApplication& app) {
     app.setStyle(QStyleFactory::create("Fusion"));
     QPalette p = app.style()->standardPalette();
 
+    if (defaultFont().family().isEmpty())
+        defaultFont() = app.font();
+
     QJsonObject themeObj = themes().value(themeToString(t)).toObject();
     for (auto it = themeObj.constBegin(); it != themeObj.constEnd(); ++it) {
         if (it.key().toLower() == "font")
@@ -87,7 +95,7 @@ void applyTheme(Theme t, QApplication& app) {
         if (!fontName.isEmpty())
             app.setFont(QFont(fontName));
         else
-            app.setFont(QFont());
+            app.setFont(defaultFont());
     }
 }
 
