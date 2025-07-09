@@ -9,8 +9,10 @@
 namespace DataLoader {
     std::vector<Students_entry> loadStudents(int n, int& count, const std::string& filename);
     std::vector<Concerts_entry> loadConcertsData(const std::string& filename);
-    bool validateStudentsFile(const std::string& filename, int& count, std::string& error);
-    bool validateConcertsFile(const std::string& filename, std::string& error);
+    bool validateStudentsFile(const std::string& filename, int& count,
+                              std::string& error, int& line);
+    bool validateConcertsFile(const std::string& filename,
+                              std::string& error, int& line);
 }
 
 #endif

@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "hashtable.h"
 #include "avltree.h"
+#include "theme.h"
 #include <vector>
 #include <QString>
 

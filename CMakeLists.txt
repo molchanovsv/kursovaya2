@@ -11,6 +11,7 @@ set(GUI_SOURCES
     src/gui/concert_actions.cpp
     src/gui/dialogs.cpp
     src/gui/export.cpp
+    src/gui/theme.cpp
 )
 
 set(CORE_SOURCES
